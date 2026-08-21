@@ -214,7 +214,6 @@ export const loginUser = async (req, res) => {
     // 2. Fallback in-memory verification if MongoDB is offline
     const memoryUser = inMemoryUsers.find((u) => u.email === normalizedEmail);
     if (!memoryUser) {
-      // Auto-register demo account or check password
       return res.status(400).json({
         success: false,
         message: "No account found with this email",
@@ -251,4 +250,4 @@ export const loginUser = async (req, res) => {
       message: error.message || "Failed to log in",
     });
   }
-};
+};
