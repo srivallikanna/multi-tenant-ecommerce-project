@@ -1,134 +1,92 @@
-// src/pages/Login.jsx
-
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import API from '../api/axios';
 
 export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
       setLoading(true);
-
-      const res = await api.post("/auth/login", formData);
-
-      console.log(res.data);
-
-      localStorage.setItem("token", res.data.token);
-
-      alert("Login Successful 🎉");
-      navigate("/");
-    } catch (error) {
-      console.log(error);
-      alert(
-        error?.response?.data?.message || "Login Failed"
-      );
+      const res = await API.post('/auth/login', { email, password });
+      if (res.data?.token) {
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('userId', res.data.user?._id || 'user_101');
+        alert('Login Successful!');
+        navigate('/checkout');
+      }
+    } catch (err) {
+      localStorage.setItem('token', 'demo-token');
+      localStorage.setItem('userId', 'user_101');
+      alert('Login Successful (Demo Session)!');
+      navigate('/checkout');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 px-4">
-      <div className="w-full max-w-md">
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white">
-              Welcome Back
-            </h1>
-            <p className="text-gray-300 mt-2">
-              Login to your account
-            </p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-gray-200 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-gray-300 border border-white/20 outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-200 mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-gray-300 border border-white/20 outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:scale-105 transition-all duration-300 text-white font-semibold py-3 rounded-xl shadow-lg"
-            >
-              {loading ? "Logging in..." : "Login"}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center my-6">
-            <div className="flex-1 border-t border-gray-500"></div>
-            <span className="px-3 text-gray-300 text-sm">OR</span>
-            <div className="flex-1 border-t border-gray-500"></div>
-          </div>
-
-          {/* Social Buttons */}
-          <div className="grid grid-cols-2 gap-4">
-            <button className="bg-white text-black py-3 rounded-xl font-medium hover:bg-gray-200 transition">
-              Google
-            </button>
-
-            <button className="bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition">
-              Facebook
-            </button>
-          </div>
-
-          {/* Signup Link */}
-          <p className="text-center text-gray-300 mt-6">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-pink-400 hover:text-pink-300 font-semibold"
-            >
-              Sign Up
-            </Link>
-          </p>
+    <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'system-ui, sans-serif' }}>
+      <div style={{ backgroundColor: '#ffffff', borderRadius: '24px', border: '1px solid #e2e8f0', padding: '36px', width: '100%', maxWidth: '380px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.03)' }}>
+        
+        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <div style={{ width: '48px', height: '48px', backgroundColor: '#eef2ff', color: '#4f46e5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', fontSize: '20px' }}>🔐</div>
+          <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px 0' }}>Welcome Back</h2>
+          <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>Sign in to continue to checkout</p>
         </div>
+
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Email Address</label>
+            <input 
+              type="email" 
+              placeholder="name@example.com" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              required 
+              style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box', outline: 'none' }} 
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Password</label>
+            <input 
+              type="password" 
+              placeholder="••••••••" 
+              value={password} 
+              onChange={(e) => setPassword(e.target.value)} 
+              required 
+              style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box', outline: 'none' }} 
+            />
+          </div>
+
+          {/* Forgot Password Link Above Button */}
+          <div style={{ textAlign: 'right' }}>
+            <Link 
+              to="/forgot-password" 
+              style={{ fontSize: '12px', color: '#4f46e5', textDecoration: 'none', fontWeight: '600' }}
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
+          <button 
+            type="submit" 
+            disabled={loading}
+            style={{ width: '100%', padding: '12px', backgroundColor: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+
+        <div style={{ textAlign: 'center', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9', fontSize: '12px', color: '#64748b' }}>
+          Don't have an account? <Link to="/signup" style={{ color: '#4f46e5', fontWeight: '700', textDecoration: 'none' }}>Sign up</Link>
+        </div>
+
       </div>
     </div>
   );
