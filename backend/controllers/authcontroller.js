@@ -1,112 +1,34 @@
-// controllers/authController.js
-
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your_super_secret_key";
-
-// In-Memory fallback store for guaranteed reliability if local MongoDB is not running
-const inMemoryUsers = [
-  {
-    _id: "usr_v101",
-    name: "Gaurav (Audio & Tech)",
-    email: "vendor@gaurav.com",
-    passwordHash: bcrypt.hashSync("vendor123", 10),
-    role: "vendor",
-    storeName: "Gaurav's Store",
-    tenantSlug: "gaurav-store",
-  },
-  {
-    _id: "usr_v102",
-    name: "Srivalli (Luxury Watches)",
-    email: "vendor@srivalli.com",
-    passwordHash: bcrypt.hashSync("vendor123", 10),
-    role: "vendor",
-    storeName: "Srivalli's Store",
-    tenantSlug: "srivalli-store",
-  },
-  {
-    _id: "usr_v103",
-    name: "Riya (Clean Beauty)",
-    email: "vendor@riya.com",
-    passwordHash: bcrypt.hashSync("vendor123", 10),
-    role: "vendor",
-    storeName: "Riya's Store",
-    tenantSlug: "riya-store",
-  },
-  {
-    _id: "usr_v104",
-    name: "Anuj (Urban Streetwear)",
-    email: "vendor@anuj.com",
-    passwordHash: bcrypt.hashSync("vendor123", 10),
-    role: "vendor",
-    storeName: "Anuj's Store",
-    tenantSlug: "anuj-store",
-  },
-  {
-    _id: "usr_c101",
-    name: "Anuj (Customer)",
-    email: "anuj@customer.com",
-    passwordHash: bcrypt.hashSync("password123", 10),
-    role: "customer",
-  },
-  {
-    _id: "usr_a101",
-    name: "Gaurav (Platform Admin)",
-    email: "admin@gaurav.com",
-    passwordHash: bcrypt.hashSync("admin123", 10),
-    role: "admin",
-  },
-];
-
-// Helper to generate JWT token
-const generateToken = (user) => {
-  return jwt.sign(
-    {
-      id: user._id || user.id,
-      email: user.email,
-      role: user.role || "customer",
-      name: user.name,
-    },
-    JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-};
-
+// =========================
 // Signup User
+// =========================
 export const signupUser = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    if (!name || !email || !password) {
+    // Check existing user
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields (name, email, password)",
       });
     }
 
-    const normalizedEmail = email.toLowerCase().trim();
-    const userRole = role || "customer";
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 1. If MongoDB is actively connected, use Mongoose
-    if (mongoose.connection.readyState === 1) {
-      const existingUser = await User.findOne({ email: normalizedEmail });
-      if (existingUser) {
-        return res.status(400).json({
-          success: false,
-          message: "User already exists with this email address",
-        });
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await User.create({
-        name: name.trim(),
-        email: normalizedEmail,
-        password: hashedPassword,
-        role: userRole,
-      });
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || "customer",
+    });
 
       const token = generateToken(user);
 
@@ -156,7 +78,6 @@ export const signupUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Signup error:", error.message);
     res.status(500).json({
       success: false,
       message: error.message || "Failed to create account",
@@ -164,7 +85,9 @@ export const signupUser = async (req, res) => {
   }
 };
 
+// =========================
 // Login User
+// =========================
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -196,7 +119,14 @@ export const loginUser = async (req, res) => {
         });
       }
 
-      const token = generateToken(user);
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
       return res.status(200).json({
         success: true,
@@ -244,10 +174,9 @@ export const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error.message);
     res.status(500).json({
       success: false,
       message: error.message || "Failed to log in",
     });
   }
-};
+};

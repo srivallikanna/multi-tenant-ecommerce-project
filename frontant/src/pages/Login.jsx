@@ -1,9 +1,13 @@
-import React, { useState } from "react";
+// src/pages/Login.jsx
+
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
 import api from "../api/axios";
 
 export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { loginUserSuccess } = useCart();
 
@@ -13,7 +17,6 @@ export default function Login() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -22,42 +25,24 @@ export default function Login() {
     });
   };
 
-  const handleLoginSuccess = (user, token) => {
-    loginUserSuccess(user, token);
-    if (user.role === "vendor") {
-      navigate("/vendor/dashboard");
-    } else if (user.role === "admin") {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/");
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      setErrorMsg("");
 
       const res = await api.post("/auth/login", formData);
-      const user = res.data.user || {
-        name: formData.email.split("@")[0],
-        email: formData.email,
-        role: formData.email.includes("vendor") ? "vendor" : formData.email.includes("admin") ? "admin" : "customer",
-      };
-      const token = res.data.token || "demo_token_" + Date.now();
 
-      handleLoginSuccess(user, token);
+      console.log(res.data);
+
+      localStorage.setItem("token", res.data.token);
+
+      alert("Login Successful 🎉");
+      navigate("/");
     } catch (error) {
-      console.log("Login fallback:", error);
-      // Fallback for seamless demo testing if backend is offline or mock user
-      const role = formData.email.includes("vendor") ? "vendor" : formData.email.includes("admin") ? "admin" : "customer";
-      const mockUser = {
-        name: formData.email.split("@")[0] || "User",
-        email: formData.email,
-        role: role,
-      };
-      handleLoginSuccess(mockUser, "mock_token_" + Date.now());
+      console.log(error);
+      alert(
+        error?.response?.data?.message || "Login Failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -90,103 +75,90 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 px-4 py-12">
-      <div className="w-full max-w-md space-y-6">
-        
-        {/* Main Card */}
-        <div className="bg-slate-950/80 backdrop-blur-xl border border-slate-800 rounded-3xl shadow-2xl p-8 text-white">
-          {/* Header */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 px-4">
+      <div className="w-full max-w-md">
+        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8">
+          {/* Logo */}
           <div className="text-center mb-8">
-            <Link to="/" className="inline-block mb-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center font-black text-2xl text-white shadow-lg mx-auto">
-                M
-              </div>
-            </Link>
-            <h1 className="text-2xl font-black text-white tracking-tight">
-              Sign In to Your Account
+            <h1 className="text-4xl font-bold text-white">
+              Welcome Back
             </h1>
-            <p className="text-xs text-slate-400 mt-1 font-medium">
-              Access your personalized customer or vendor dashboard
+            <p className="text-gray-300 mt-2">
+              Login to your account
             </p>
           </div>
 
-          {errorMsg && (
-            <div className="p-3 bg-red-950/60 border border-red-500/30 text-red-300 rounded-xl text-xs font-bold mb-4">
-              {errorMsg}
-            </div>
-          )}
-
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-slate-300 font-bold mb-1">Email Address</label>
+              <label className="block text-gray-200 mb-2">
+                Email
+              </label>
               <input
                 type="email"
                 name="email"
-                placeholder="name@example.com"
+                placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 outline-none focus:border-amber-400 font-medium"
+                className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-gray-300 border border-white/20 outline-none focus:ring-2 focus:ring-pink-400"
               />
             </div>
 
             <div>
-              <label className="block text-slate-300 font-bold mb-1">Password</label>
+              <label className="block text-gray-200 mb-2">
+                Password
+              </label>
               <input
                 type="password"
                 name="password"
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 outline-none focus:border-amber-400 font-medium"
+                className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-gray-300 border border-white/20 outline-none focus:ring-2 focus:ring-pink-400"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 font-black rounded-xl text-xs shadow-md border border-[#fcd200] transition active:scale-95 disabled:opacity-50 mt-2"
+              className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:scale-105 transition-all duration-300 text-white font-semibold py-3 rounded-xl shadow-lg"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
 
-          {/* 1-Click Role Switcher Demo Box */}
-          <div className="mt-8 pt-6 border-t border-slate-800 space-y-3">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block text-center">
-              ⚡ 1-Click Quick Demo Login
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin("vendor")}
-                className="p-2.5 bg-indigo-950/60 hover:bg-indigo-900/80 border border-indigo-500/30 text-indigo-200 text-xs font-bold rounded-xl transition text-center flex flex-col items-center gap-0.5"
-              >
-                <span>🏪 Login as Vendor</span>
-                <span className="text-[9px] text-indigo-400 font-normal">Opens Vendor Console</span>
-              </button>
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-1 border-t border-gray-500"></div>
+            <span className="px-3 text-gray-300 text-sm">OR</span>
+            <div className="flex-1 border-t border-gray-500"></div>
+          </div>
 
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin("customer")}
-                className="p-2.5 bg-emerald-950/60 hover:bg-emerald-900/80 border border-emerald-500/30 text-emerald-200 text-xs font-bold rounded-xl transition text-center flex flex-col items-center gap-0.5"
-              >
-                <span>🛍️ Login as Customer</span>
-                <span className="text-[9px] text-emerald-400 font-normal">Opens Customer Shop</span>
-              </button>
-            </div>
+          {/* Social Buttons */}
+          <div className="grid grid-cols-2 gap-4">
+            <button className="bg-white text-black py-3 rounded-xl font-medium hover:bg-gray-200 transition">
+              Google
+            </button>
+
+            <button className="bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition">
+              Facebook
+            </button>
           </div>
 
           {/* Signup Link */}
-          <p className="text-center text-slate-400 text-xs mt-6">
+          <p className="text-center text-gray-300 mt-6">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-amber-400 hover:text-amber-300 font-bold">
+            <Link
+              to="/signup"
+              className="text-pink-400 hover:text-pink-300 font-semibold"
+            >
               Sign Up
             </Link>
           </p>
         </div>
+
       </div>
     </div>
   );

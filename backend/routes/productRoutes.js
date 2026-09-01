@@ -1,4 +1,11 @@
-import express from "express";
+import express from 'express';
+import { createProduct, getProducts } from '../controllers/productControllers.js';
+
+const router = express.Router();
+
+router.post('/add', createProduct);
+router.get('/', getProducts);
+
 import {
   getAllProducts,
   getProductById,
@@ -9,7 +16,6 @@ import {
 } from "../controllers/productController.js";
 import { protect, isVendor } from "../middleware/authMiddleware.js";
 
-const router = express.Router();
 
 // Public routes
 router.get("/", getAllProducts);
