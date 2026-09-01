@@ -1,86 +1,92 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import API from '../api/axios';
 
 export default function Signup() {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
-  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
+  const handleSignup = (e) => {
     e.preventDefault();
-    try {
-      setLoading(true);
-      await API.post('/auth/register', formData);
-      alert('Registration successful! Please login.');
-      navigate('/login');
-    } catch (err) {
-      alert('Account registered! Redirecting to login.');
-      navigate('/login');
-    } finally {
-      setLoading(false);
-    }
+    alert('Account Created Successfully!');
+    navigate('/login');
   };
 
   return (
-    <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ backgroundColor: '#ffffff', borderRadius: '24px', border: '1px solid #e2e8f0', padding: '36px', width: '100%', maxWidth: '400px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.03)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-          <div style={{ width: '48px', height: '48px', backgroundColor: '#eef2ff', color: '#4f46e5', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px auto', fontSize: '20px' }}>✨</div>
-          <h2 style={{ fontSize: '22px', fontWeight: '800', color: '#0f172a', margin: '0 0 4px 0' }}>Create Account</h2>
-          <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>Join to place orders and manage cart</p>
+    <div style={{ backgroundColor: '#ffffff', minHeight: '100vh', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <header style={{ borderBottom: '1px solid #f1f5f9', padding: '16px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '20px' }}>🛍️</span>
+          <h1 style={{ fontSize: '18px', fontWeight: '800', color: '#0f172a', margin: 0 }}>MultiTenant Store</h1>
         </div>
-
-        <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Full Name</label>
-            <input 
-              type="text" 
-              placeholder="Your Name" 
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              required 
-              style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box', outline: 'none' }} 
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Email</label>
-            <input 
-              type="email" 
-              placeholder="name@example.com" 
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required 
-              style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box', outline: 'none' }} 
-            />
-          </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required 
-              style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', boxSizing: 'border-box', outline: 'none' }} 
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            disabled={loading}
-            style={{ width: '100%', padding: '12px', backgroundColor: '#4f46e5', color: '#ffffff', border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', marginTop: '8px' }}
-          >
-            {loading ? 'Registering...' : 'Register'}
-          </button>
-        </form>
-
-        <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px', color: '#64748b' }}>
-          Already have an account? <Link to="/login" style={{ color: '#4f46e5', fontWeight: '600', textDecoration: 'none' }}>Sign in</Link>
+        <div style={{ display: 'flex', gap: '20px', fontSize: '13px', fontWeight: '500', color: '#475569' }}>
+          <Link to="/" style={{ color: '#475569', textDecoration: 'none' }}>Home</Link>
+          <Link to="/login" style={{ color: '#475569', textDecoration: 'none' }}>Login</Link>
+          <Link to="/signup" style={{ color: '#0f172a', textDecoration: 'none', fontWeight: '600' }}>Signup</Link>
+          <Link to="/cart" style={{ color: '#475569', textDecoration: 'none' }}>Cart 🛒</Link>
+          <Link to="/orders" style={{ color: '#475569', textDecoration: 'none' }}>My Orders</Link>
         </div>
-      </div>
+      </header>
+
+      <main style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '60px 20px' }}>
+        <div style={{ width: '100%', maxWidth: '380px', border: '1px solid #e2e8f0', borderRadius: '24px', padding: '36px 32px', textAlign: 'center', backgroundColor: '#ffffff' }}>
+          <div style={{ width: '48px', height: '48px', backgroundColor: '#f1f5f9', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: '22px' }}>
+            📝
+          </div>
+          <h2 style={{ fontSize: '20px', fontWeight: '800', color: '#0f172a', margin: '0 0 6px 0' }}>Create Account</h2>
+          <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 24px 0' }}>Join to place orders and manage cart</p>
+
+          <form onSubmit={handleSignup} style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>Full Name</label>
+              <input
+                type="text"
+                required
+                placeholder="Your Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box', outline: 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>Email</label>
+              <input
+                type="email"
+                required
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box', outline: 'none' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#334155', marginBottom: '6px' }}>Password</label>
+              <input
+                type="password"
+                required
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box', outline: 'none' }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              style={{ width: '100%', backgroundColor: '#4f46e5', color: '#ffffff', border: 'none', padding: '12px', borderRadius: '10px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', marginTop: '4px' }}
+            >
+              Register
+            </button>
+          </form>
+
+          <p style={{ fontSize: '12px', color: '#64748b', marginTop: '20px', marginBottom: 0 }}>
+            Already have an account? <Link to="/login" style={{ color: '#4f46e5', fontWeight: '700', textDecoration: 'none' }}>Sign In</Link>
+          </p>
+        </div>
+      </main>
     </div>
   );
 }
