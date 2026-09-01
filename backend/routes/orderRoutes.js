@@ -84,4 +84,19 @@ router.post('/place', async (req, res) => {
   }
 });
 
+import express from "express";
+import {
+  createOrder,
+  getCustomerOrders,
+  getVendorOrders,
+  updateOrderStatus,
+} from "../controllers/orderController.js";
+import { protect, isVendor } from "../middleware/authMiddleware.js";
+
+
+router.post("/", protect, createOrder);
+router.get("/my-orders", protect, getCustomerOrders);
+router.get("/vendor-orders", protect, isVendor, getVendorOrders);
+router.put("/:id/status", protect, isVendor, updateOrderStatus);
+
 export default router;
