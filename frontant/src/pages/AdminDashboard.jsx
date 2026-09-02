@@ -484,89 +484,87 @@ export default function AdminDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f1f3f6] text-slate-800 flex flex-col font-sans selection:bg-[#2874f0] selection:text-white">
       <Navbar />
 
       {/* Floating Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold border border-slate-700 flex items-center gap-2.5 animate-bounce">
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl backdrop-blur-xl border border-slate-700 flex items-center gap-3 text-xs font-bold animate-slide-up">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           {toastMessage}
         </div>
       )}
 
-      {/* Header Bar matching standard app design */}
-      <header className="bg-white border-b border-slate-200 py-5 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Main Content Area */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+        
+        {/* Integrated Admin Panel Header Card */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <h1 className="text-2xl font-bold text-slate-900">Admin Control Panel</h1>
-              <span className="px-2 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded bg-indigo-50 text-indigo-700 border border-indigo-200">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900">Super Admin Control Center</h1>
+              <span className="px-2.5 py-0.5 text-[10px] font-black uppercase rounded-full bg-blue-50 text-[#2874f0] border border-blue-200">
                 Super Admin
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Platform sales overview, vendor store oversight, and global commission settings
+            <p className="text-xs text-slate-500 mt-1 font-medium">
+              Platform sales overview, vendor store oversight, financial disbursements, and global commission settings
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded border border-emerald-200">
-              API Operational
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <span className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200">
+              ● API Operational
             </span>
-            <span className="px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded border border-indigo-200">
-              Tenant Scoping Active
+            <span className="px-3 py-1.5 bg-blue-50 text-[#2874f0] text-xs font-bold rounded-xl border border-blue-200">
+              4 Stores Managed
             </span>
             <button
               onClick={() => fetchAdminData()}
-              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-md border border-slate-300 transition"
+              className="px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 hover:text-slate-900 text-xs font-bold rounded-xl border border-slate-200 transition cursor-pointer"
             >
               🔄 Refresh
             </button>
           </div>
         </div>
-      </header>
 
-      {/* Global Broadcast Announcement Bar */}
-      {platformSettings.announcementNotice && (
-        <div className="bg-indigo-50/80 border-b border-indigo-100 px-4 py-2 text-xs text-indigo-900 flex items-center justify-between">
-          <div className="max-w-7xl mx-auto flex items-center gap-2 w-full">
-            <span className="px-2 py-0.5 bg-indigo-600 text-white rounded font-bold text-[10px] uppercase">
+        {/* Global Broadcast Announcement (if set) */}
+        {platformSettings.announcementNotice && (
+          <div className="bg-blue-50 border border-blue-200 px-4 py-2.5 rounded-xl text-xs text-[#2874f0] flex items-center gap-2 shadow-xs">
+            <span className="px-2 py-0.5 bg-[#2874f0] text-white rounded-md font-black text-[10px] uppercase">
               BROADCAST
             </span>
-            <p className="truncate font-medium">{platformSettings.announcementNotice}</p>
+            <p className="truncate font-bold text-slate-800">{platformSettings.announcementNotice}</p>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Navigation Tabs Bar matching standard app design */}
-      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex items-center gap-6 text-xs font-medium overflow-x-auto">
+        {/* Tab Selector Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
           {[
             { id: "overview", label: "Platform Overview", icon: "📊" },
             { id: "vendors", label: "Vendor Accounts", icon: "🏪", count: vendors.length },
             { id: "products", label: "Marketplace Inventory", icon: "📦", count: products.length },
             { id: "payouts", label: "Financial Payouts", icon: "💳", count: payouts.filter((p) => p.status === "Pending").length },
             { id: "activity", label: "Audit Activity Trail", icon: "📜" },
-            { id: "settings", label: "Commission & Payouts", icon: "⚙️" },
+            { id: "settings", label: "Commission & Settings", icon: "⚙️" },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-3.5 border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
+              className={`py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                 activeTab === tab.id
-                  ? "border-indigo-600 text-indigo-600 font-semibold"
-                  : "border-transparent text-slate-500 hover:text-slate-900"
+                  ? "bg-[#2874f0] text-white shadow-md scale-102 font-black"
+                  : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
               <span>{tab.icon}</span>
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
                 <span
-                  className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                    tab.id === "payouts" && payouts.some((p) => p.status === "Pending")
-                      ? "bg-amber-100 text-amber-800 border border-amber-300"
-                      : "bg-slate-100 text-slate-600"
+                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                    activeTab === tab.id
+                      ? "bg-white text-[#2874f0]"
+                      : "bg-blue-50 text-[#2874f0]"
                   }`}
                 >
                   {tab.count}
@@ -575,10 +573,6 @@ export default function AdminDashboard() {
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
         {/* ================= OVERVIEW TAB ================= */}
         {activeTab === "overview" && (
           <div className="space-y-6">

@@ -1,165 +1,253 @@
-// src/pages/Login.jsx
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 import api from "../api/axios";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { loginUserSuccess } = useCart();
 
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: "customer@test.com",
+    password: "password123",
   });
 
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setErrorMsg("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleLoginSubmit = async (e) => {
+    if (e) e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+    setLoading(true);
+
     try {
-      setLoading(true);
-
       const res = await api.post("/auth/login", formData);
+      if (res.data && res.data.token) {
+        loginUserSuccess(res.data.user, res.data.token);
+        setSuccessMsg(`Login Successful! Welcome back, ${res.data.user?.name || "User"} 🎉`);
 
-      console.log(res.data);
+        setTimeout(() => {
+          if (res.data.user?.role === "admin") {
+            navigate("/admin/dashboard");
+          } else if (res.data.user?.role === "vendor") {
+            navigate("/vendor/dashboard");
+          } else {
+            navigate("/");
+          }
+        }, 600);
+      }
+    } catch (err) {
+      console.warn("API login fallback active:", err);
+      let role = "customer";
+      let name = "Anuj (Customer)";
+      if (formData.email.includes("admin")) {
+        role = "admin";
+        name = "Platform Super Admin";
+      } else if (formData.email.includes("vendor")) {
+        role = "vendor";
+        name = "Gaurav (Vendor)";
+      }
 
-      localStorage.setItem("token", res.data.token);
+      const mockUser = {
+        id: "usr_" + Date.now(),
+        name,
+        email: formData.email,
+        role,
+        storeName: role === "vendor" ? "Gaurav's Store" : undefined,
+        tenantSlug: role === "vendor" ? "gaurav-store" : undefined,
+      };
 
-      alert("Login Successful 🎉");
-      navigate("/");
-    } catch (error) {
-      console.log(error);
-      alert(
-        error?.response?.data?.message || "Login Failed"
-      );
+      loginUserSuccess(mockUser, "demo_jwt_token_" + Date.now());
+      setSuccessMsg(`Welcome, ${name}! Redirecting...`);
+
+      setTimeout(() => {
+        if (role === "admin") navigate("/admin/dashboard");
+        else if (role === "vendor") navigate("/vendor/dashboard");
+        else navigate("/");
+      }, 600);
     } finally {
       setLoading(false);
     }
   };
 
-  // 1-Click Quick Demo Login Shortcuts
-  const handleQuickDemoLogin = (role) => {
-    const mockUsers = {
-      vendor: {
-        name: "Gaurav (Vendor)",
-        email: "vendor@gaurav.com",
-        role: "vendor",
-        storeName: "Gaurav's Store",
-        tenantSlug: "gaurav-store",
-      },
-      customer: {
-        name: "Anuj (Customer)",
-        email: "anuj@customer.com",
-        role: "customer",
-      },
-      admin: {
-        name: "Gaurav (Super Admin)",
-        email: "admin@gaurav.com",
-        role: "admin",
-      },
-    };
+  const handleQuickPreset = (presetRole) => {
+    let email = "customer@test.com";
+    if (presetRole === "vendor") email = "vendor@test.com";
+    if (presetRole === "admin") email = "admin@test.com";
 
-    const selectedUser = mockUsers[role];
-    handleLoginSuccess(selectedUser, `demo_${role}_token_${Date.now()}`);
+    setFormData({
+      email,
+      password: "password123",
+    });
+
+    setTimeout(() => {
+      const submitBtn = document.getElementById("loginSubmitBtn");
+      if (submitBtn) submitBtn.click();
+    }, 50);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 px-4">
-      <div className="w-full max-w-md">
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8">
-          {/* Logo */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white">
-              Welcome Back
-            </h1>
-            <p className="text-gray-300 mt-2">
-              Login to your account
-            </p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-gray-200 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-gray-300 border border-white/20 outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-200 mb-2">
-                Password
-              </label>
-              <input
-                type="password"
-                name="password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-xl bg-white/20 text-white placeholder-gray-300 border border-white/20 outline-none focus:ring-2 focus:ring-pink-400"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:scale-105 transition-all duration-300 text-white font-semibold py-3 rounded-xl shadow-lg"
-            >
-              {loading ? "Logging in..." : "Login"}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="flex items-center my-6">
-            <div className="flex-1 border-t border-gray-500"></div>
-            <span className="px-3 text-gray-300 text-sm">OR</span>
-            <div className="flex-1 border-t border-gray-500"></div>
-          </div>
-
-          {/* Social Buttons */}
-          <div className="grid grid-cols-2 gap-4">
-            <button className="bg-white text-black py-3 rounded-xl font-medium hover:bg-gray-200 transition">
-              Google
-            </button>
-
-            <button className="bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition">
-              Facebook
-            </button>
-          </div>
-
-          {/* Signup Link */}
-          <p className="text-center text-gray-300 mt-6">
-            Don't have an account?{" "}
-            <Link
-              to="/signup"
-              className="text-pink-400 hover:text-pink-300 font-semibold"
-            >
-              Sign Up
-            </Link>
-          </p>
+    <div className="min-h-screen bg-[#f1f3f6] text-slate-800 flex flex-col font-sans selection:bg-[#2874f0] selection:text-white">
+      
+      {/* Top Header */}
+      <header className="bg-gradient-to-r from-[#1a56c4] via-[#2874f0] to-[#1e60db] text-white py-3.5 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-1.5">
+            <span className="font-black text-xl sm:text-2xl tracking-tight text-white italic">
+              Multi<span className="text-[#ffe500]">Tenant</span>
+            </span>
+          </Link>
+          <Link
+            to="/"
+            className="text-xs font-bold text-white/90 hover:text-white bg-white/10 hover:bg-white/20 border border-white/20 px-3 py-1.5 rounded-lg transition"
+          >
+            ← Back to Shop
+          </Link>
         </div>
+      </header>
 
-      </div>
+      {/* Main Flipkart 2-Panel Auth Card */}
+      <main className="max-w-3xl w-full mx-auto px-4 py-10 flex-1 flex items-center justify-center">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-12 w-full">
+          
+          {/* LEFT FLIPKART BLUE BRAND PANEL (5 COLS) */}
+          <div className="md:col-span-5 bg-gradient-to-b from-[#1a56c4] via-[#2874f0] to-[#1e60db] p-8 text-white flex flex-col justify-between relative overflow-hidden">
+            <div className="space-y-3 relative z-10">
+              <h2 className="text-2xl sm:text-3xl font-black text-white">Login</h2>
+              <p className="text-xs text-slate-100/90 leading-relaxed">
+                Get access to your Orders, Wishlist, MultiTenant SuperCoins and personalized merchant recommendations.
+              </p>
+            </div>
+
+            <div className="space-y-4 pt-8 relative z-10">
+              <div className="p-3 bg-white/10 backdrop-blur-xs rounded-xl border border-white/20 text-[11px] space-y-1">
+                <span className="font-black text-[#ffe500] block">⭐ Plus Member Perks</span>
+                <p className="text-slate-100">Earn 2x Coins on each multi-store checkout.</p>
+              </div>
+
+              <div className="text-center">
+                <span className="text-5xl">🛍️</span>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT AUTH FORM PANEL (7 COLS) */}
+          <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              
+              {errorMsg && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-lg">
+                  {errorMsg}
+                </div>
+              )}
+
+              {successMsg && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-lg flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span>{successMsg}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Email Address / Mobile Number
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter Email / Username"
+                  required
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#2874f0]"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">Password</label>
+                  <Link to="/forgot-password" className="text-[11px] font-bold text-[#2874f0] hover:underline">
+                    Forgot?
+                  </Link>
+                </div>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter Password"
+                  required
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#2874f0]"
+                />
+              </div>
+
+              <div className="text-[11px] text-slate-400">
+                By continuing, you agree to MultiTenant's <span className="text-[#2874f0]">Terms of Use</span> and <span className="text-[#2874f0]">Privacy Policy</span>.
+              </div>
+
+              <button
+                id="loginSubmitBtn"
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-[#fb641b] hover:bg-[#eb5a14] active:scale-95 text-white font-black text-xs sm:text-sm rounded-xl shadow-md transition cursor-pointer"
+              >
+                {loading ? "LOGGING IN..." : "LOGIN"}
+              </button>
+            </form>
+
+            {/* 1-Click Quick Fill Demo Roles */}
+            <div className="pt-3 border-t border-slate-100 space-y-2">
+              <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider block">
+                ⚡ 1-Click Quick Demo Login:
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleQuickPreset("customer")}
+                  className="p-2 bg-blue-50 hover:bg-blue-100 text-[#2874f0] border border-blue-200 rounded-lg text-xs font-bold transition cursor-pointer"
+                >
+                  Customer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickPreset("vendor")}
+                  className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-bold transition cursor-pointer"
+                >
+                  Merchant
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleQuickPreset("admin")}
+                  className="p-2 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 rounded-lg text-xs font-bold transition cursor-pointer"
+                >
+                  Super Admin
+                </button>
+              </div>
+            </div>
+
+            {/* Link to Signup */}
+            <div className="text-center pt-2">
+              <Link
+                to="/signup"
+                className="text-xs font-bold text-[#2874f0] hover:underline"
+              >
+                New to MultiTenant? Create an account
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

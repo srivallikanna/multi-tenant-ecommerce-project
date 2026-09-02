@@ -365,22 +365,24 @@ export default function VendorDashboard() {
         </div>
       )}
 
-      {/* Top Seller Bar */}
-      <header className="bg-white border-b border-slate-200 py-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-2xl shadow-md shadow-indigo-100">
+      {/* Main Content Workspace */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+        
+        {/* Integrated Vendor Store Banner Card */}
+        <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#1a56c4] via-[#2874f0] to-[#1e60db] flex items-center justify-center text-white text-3xl shadow-md">
               🎧
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900">{storeSettings.storeName}</h1>
                 <span className="px-2.5 py-0.5 text-[10px] font-black uppercase rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Active Store
+                  Verified Merchant
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2 font-medium">
-                <span className="text-indigo-600 font-semibold">Store ID: {storeSettings.storeHandle}</span>
+              <p className="text-xs text-slate-500 mt-1 flex items-center gap-2 font-medium">
+                <span className="text-[#2874f0] font-semibold">Store Handle: @{storeSettings.storeHandle}</span>
                 <span>•</span>
                 <span>⭐ 4.9 Rating (120+ Reviews)</span>
               </p>
@@ -397,23 +399,21 @@ export default function VendorDashboard() {
             </Link>
             <button
               onClick={() => setShowPayoutModal(true)}
-              className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm"
+              className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <span>💸</span> Payouts
             </button>
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-200 transition flex items-center gap-1.5"
+              className="px-4 py-2 bg-[#2874f0] hover:bg-[#1e60db] active:scale-95 text-white text-xs font-extrabold rounded-xl shadow-md transition flex items-center gap-1.5 cursor-pointer"
             >
               <span>+</span> Add Product
             </button>
           </div>
         </div>
-      </header>
 
-      {/* Navigation Tabs */}
-      <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 sticky top-0 z-20 shadow-xs">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 sm:gap-4 text-xs font-bold overflow-x-auto scrollbar-none py-1">
+        {/* Tab Selector Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
           {[
             { id: "overview", label: "Dashboard", icon: "📊" },
             { id: "inventory", label: "Products", icon: "📦", count: products.length },
@@ -425,18 +425,20 @@ export default function VendorDashboard() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-3 px-3 rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
+              className={`py-2.5 px-4 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                 activeTab === tab.id
-                  ? "bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  ? "bg-[#2874f0] text-white shadow-md scale-102 font-black"
+                  : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
-              <span className="text-base">{tab.icon}</span>
+              <span>{tab.icon}</span>
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                    tab.badgeColor || "bg-slate-200 text-slate-700"
+                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${
+                    activeTab === tab.id
+                      ? "bg-white text-[#2874f0]"
+                      : "bg-blue-50 text-[#2874f0]"
                   }`}
                 >
                   {tab.count}
@@ -445,10 +447,6 @@ export default function VendorDashboard() {
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Main Content Workspace */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
         
         {/* ================= 1. OVERVIEW / DASHBOARD TAB ================= */}
         {activeTab === "overview" && (

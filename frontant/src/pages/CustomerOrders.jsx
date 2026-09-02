@@ -11,9 +11,8 @@ export default function CustomerOrders() {
   const [toastMessage, setToastMessage] = useState("");
 
   // Tabs & Filters
-  const [activeTab, setActiveTab] = useState("orders"); // "orders", "buy_again", "not_shipped", "cancelled"
+  const [statusFilter, setStatusFilter] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
-  const [timeFilter, setTimeFilter] = useState("past_3_months");
 
   // Modals
   const [selectedTrackingOrder, setSelectedTrackingOrder] = useState(null);
@@ -21,113 +20,84 @@ export default function CustomerOrders() {
   const [selectedReviewItem, setSelectedReviewItem] = useState(null);
   const [selectedReturnOrder, setSelectedReturnOrder] = useState(null);
 
-  // Review Form
-  const [reviewForm, setReviewForm] = useState({
-    rating: 5,
-    comment: "",
-  });
-
-  // Return Form
-  const [returnReason, setReturnReason] = useState("Item arrived late");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [returnReason, setReturnReason] = useState("Item quality not as expected");
 
   const { addToCart } = useCart();
 
-  // Authentic Amazon/Flipkart-style realistic order items
   const sampleOrders = [
     {
-      _id: "ord_402-8910234-918231",
+      _id: "OD128910234918231000",
       createdAt: "2026-08-19T14:30:00.000Z",
       status: "In Transit",
-      statusMessage: "Arriving Tuesday by 8 PM",
-      statusDetail: "Package departed local carrier facility",
-      totalAmount: 329.98,
-      shippingAddress: "Anuj, 742 Evergreen Terrace, Springfield, OR 97477",
-      paymentMethod: "Visa ending in 4242",
+      statusMessage: "Arriving Tomorrow by 5 PM",
+      statusDetail: "Item has been dispatched from nearest regional hub.",
+      totalAmount: 199.99,
+      shippingAddress: "Anuj Bhaskar, 742 Evergreen Terrace, Springfield, OR 97477",
+      paymentMethod: "UPI (Verified)",
       vendorStore: "Gaurav's Store",
       tenantSlug: "gaurav-store",
-      trackingNumber: "TRK-89210923",
-      carrier: "UPS Ground",
-      estimatedDelivery: "Tuesday, Aug 22",
-      returnEligibleUntil: "Sep 22, 2026",
+      trackingNumber: "FK-89210923",
+      carrier: "SuperFast Express",
       items: [
         {
-          _id: "prod_1",
-          name: "Wireless Noise-Canceling Over-Ear Headphones (Midnight Black)",
+          _id: "prod_101",
+          name: "AcousticPro Studio Wireless ANC Headphones (Midnight Obsidian)",
           price: 199.99,
           quantity: 1,
           image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=60",
           category: "Electronics",
         },
-        {
-          _id: "prod_5",
-          name: "True Wireless Earbuds Pro with Active Noise Cancellation",
-          price: 129.99,
-          quantity: 1,
-          image: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=500&auto=format&fit=crop&q=60",
-          category: "Electronics",
-        },
       ],
-      subtotal: 303.58,
-      tax: 26.40,
-      shippingFee: 0.00,
     },
     {
-      _id: "ord_114-8904512-441092",
+      _id: "OD114890451244109200",
       createdAt: "2026-08-14T09:15:00.000Z",
-      status: "In Transit",
-      statusMessage: "Arriving Tomorrow by 2 PM",
-      statusDetail: "Out for delivery with FedEx courier",
-      totalAmount: 149.50,
-      shippingAddress: "Riya, 100 Bay View Street, San Francisco, CA 94105",
-      paymentMethod: "Apple Pay",
+      status: "Delivered",
+      statusMessage: "Delivered on Aug 16, 2026",
+      statusDetail: "Package was handed directly to resident.",
+      totalAmount: 289.00,
+      shippingAddress: "Anuj Bhaskar, 742 Evergreen Terrace, Springfield, OR 97477",
+      paymentMethod: "Visa ending in 4242",
       vendorStore: "Srivalli's Store",
       tenantSlug: "srivalli-store",
-      trackingNumber: "FEDEX-992014812",
-      carrier: "FedEx Priority",
-      estimatedDelivery: "Tomorrow, Aug 20",
-      returnEligibleUntil: "Sep 19, 2026",
+      trackingNumber: "FK-992014812",
+      carrier: "SuperFast Express",
       items: [
         {
-          _id: "prod_11",
-          name: "Minimalist Ergonomic Chronograph Watch with Leather Strap",
-          price: 149.50,
+          _id: "prod_102",
+          name: "ChronoMaster Minimalist Sapphire Watch with Genuine Leather",
+          price: 289.00,
           quantity: 1,
           image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=500&auto=format&fit=crop&q=60",
           category: "Fashion",
         },
       ],
-      subtotal: 137.54,
-      tax: 11.96,
-      shippingFee: 0.00,
     },
     {
-      _id: "ord_108-8892109-112940",
+      _id: "OD108889210911294000",
       createdAt: "2026-08-05T18:20:00.000Z",
       status: "Delivered",
-      statusMessage: "Delivered Aug 8, 2026",
-      statusDetail: "Package was handed directly to resident.",
-      totalAmount: 179.50,
-      shippingAddress: "Gaurav, 450 Market St, Seattle, WA 98101",
-      paymentMethod: "Visa ending in 4242",
-      vendorStore: "Anuj's Store",
-      tenantSlug: "anuj-store",
-      trackingNumber: "DHL-48192039US",
-      carrier: "DHL Express",
-      estimatedDelivery: "Aug 08, 2026",
-      returnEligibleUntil: "Sep 08, 2026",
+      statusMessage: "Delivered on Aug 08, 2026",
+      statusDetail: "Delivered to reception desk.",
+      totalAmount: 48.00,
+      shippingAddress: "Anuj Bhaskar, 742 Evergreen Terrace, Springfield, OR 97477",
+      paymentMethod: "UPI (Google Pay)",
+      vendorStore: "Riya's Store",
+      tenantSlug: "riya-store",
+      trackingNumber: "FK-48192039",
+      carrier: "SuperFast Express",
       items: [
         {
-          _id: "prod_3",
-          name: "4K Ultra HD Waterproof Action Camera with Pro Stabilizer",
-          price: 179.50,
+          _id: "prod_103",
+          name: "Botanical Radiance Vitamin C Glow Serum (30ml)",
+          price: 48.00,
           quantity: 1,
-          image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=500&auto=format&fit=crop&q=60",
-          category: "Electronics",
+          image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop&q=60",
+          category: "Beauty",
         },
       ],
-      subtotal: 165.14,
-      tax: 14.36,
-      shippingFee: 0.00,
     },
   ];
 
@@ -141,13 +111,19 @@ export default function CustomerOrders() {
       const token = localStorage.getItem("token");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await api.get("/orders/my-orders", { headers });
+      
+      const localPlaced = JSON.parse(localStorage.getItem("all_placed_orders") || "[]");
+
       if (res.data && res.data.orders && res.data.orders.length > 0) {
-        setOrders(res.data.orders);
+        setOrders([...localPlaced, ...res.data.orders]);
+      } else if (localPlaced.length > 0) {
+        setOrders([...localPlaced, ...sampleOrders]);
       } else {
         setOrders(sampleOrders);
       }
     } catch (err) {
-      setOrders(sampleOrders);
+      const localPlaced = JSON.parse(localStorage.getItem("all_placed_orders") || "[]");
+      setOrders(localPlaced.length > 0 ? [...localPlaced, ...sampleOrders] : sampleOrders);
     } finally {
       setLoading(false);
     }
@@ -159,662 +135,385 @@ export default function CustomerOrders() {
   };
 
   const handleBuyAgain = (item) => {
-    addToCart(
-      {
-        _id: item._id || "prod_" + Date.now(),
-        name: item.name,
-        price: Number(item.price),
-        image: item.image,
-      },
-      1
-    );
+    addToCart(item, 1);
     showToast(`Added "${item.name}" to cart! 🛒`);
   };
 
   const handleSubmitReview = (e) => {
     e.preventDefault();
-    let currentUserName = "Anuj";
-    try {
-      const u = JSON.parse(localStorage.getItem("user") || "{}");
-      if (u.name) currentUserName = u.name;
-    } catch (err) {}
-
-    const reviewObj = {
-      id: "rev_" + Date.now(),
-      customerName: currentUserName,
-      rating: Number(reviewForm.rating),
-      title: `${reviewForm.rating}-Star Buyer Review`,
-      comment: reviewForm.comment,
-      date: "Just now",
-      verifiedPurchase: true,
-      helpfulCount: 1,
-      vendorReply: "",
-      tags: ["Verified Buyer", "Fast Delivery"],
-    };
-
-    try {
-      const storageKey = `customer_reviews_${selectedReviewItem._id || "prod_1"}`;
-      const existing = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      localStorage.setItem(storageKey, JSON.stringify([reviewObj, ...existing]));
-
-      const allReviews = JSON.parse(localStorage.getItem("all_vendor_reviews") || "[]");
-      localStorage.setItem("all_vendor_reviews", JSON.stringify([reviewObj, ...allReviews]));
-    } catch (err) {}
-
-    showToast(`Review submitted for "${selectedReviewItem.name}"! ⭐ ${reviewForm.rating}/5 Stars`);
+    showToast(`Review posted for "${selectedReviewItem?.name}"! ⭐ ${reviewRating}/5 Stars`);
     setSelectedReviewItem(null);
-    setReviewForm({ rating: 5, comment: "" });
+    setReviewComment("");
   };
 
   const handleReturnSubmit = (e) => {
     e.preventDefault();
-    showToast(`Return request for Order #${selectedReturnOrder._id.slice(-6)} submitted successfully!`);
+    showToast(`Return request placed successfully for Order #${selectedReturnOrder?._id?.slice(-6)}`);
     setSelectedReturnOrder(null);
   };
 
-  // Filter logic
   const filteredOrders = orders.filter((o) => {
-    if (activeTab === "not_shipped") {
-      if (o.status === "Delivered") return false;
-    } else if (activeTab === "cancelled") {
-      if (o.status !== "Cancelled") return false;
-    }
+    if (statusFilter === "Delivered" && o.status !== "Delivered") return false;
+    if (statusFilter === "In Transit" && o.status !== "In Transit" && o.status !== "Placed") return false;
+    if (statusFilter === "Cancelled" && o.status !== "Cancelled") return false;
 
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     return (
-      o._id.toLowerCase().includes(q) ||
-      o.items?.some((it) => it.name.toLowerCase().includes(q)) ||
-      (o.vendorStore && o.vendorStore.toLowerCase().includes(q))
+      o._id?.toLowerCase().includes(q) ||
+      o.items?.some((it) => it.name?.toLowerCase().includes(q)) ||
+      o.vendorStore?.toLowerCase().includes(q)
     );
   });
 
-  // Extract all unique purchased items for "Buy Again" tab
-  const allPurchasedItems = orders.flatMap((o) => o.items || []);
-
   return (
-    <div className="min-h-screen bg-[#eaeded] text-slate-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f1f3f6] text-slate-800 flex flex-col font-sans selection:bg-[#2874f0] selection:text-white pb-16">
       <Navbar />
 
-      {/* Floating Notification */}
+      {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold border border-slate-700 animate-slide-up">
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold animate-slide-down border border-slate-700">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           {toastMessage}
         </div>
       )}
 
-      {/* Breadcrumb Bar */}
-      <div className="bg-white border-b border-slate-200 py-2.5 px-4 sm:px-8 text-xs text-slate-500 font-medium">
-        <div className="max-w-6xl mx-auto flex items-center gap-2">
-          <Link to="/" className="hover:text-indigo-600 hover:underline">Your Account</Link>
-          <span>›</span>
-          <span className="text-slate-900 font-bold">Your Orders</span>
-        </div>
-      </div>
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-8 py-6 flex-1 w-full space-y-5">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 flex-1 w-full space-y-4">
         
-        {/* Amazon-style Title & Search Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Your Orders
-          </h1>
+        {/* Breadcrumb strip */}
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+          <Link to="/" className="hover:text-[#2874f0]">Home</Link>
+          <span>›</span>
+          <span className="text-slate-800 font-black">My Orders</span>
+        </div>
 
-          {/* Search Orders Input */}
-          <div className="flex items-center gap-2 max-w-md w-full">
-            <div className="relative flex-1">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+        {/* 2-Column Flipkart Orders Layout: Left Filters + Right Order Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          
+          {/* LEFT: FILTERS SIDEBAR (3 COLS) */}
+          <div className="lg:col-span-3 space-y-3">
+            <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-xs space-y-4">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 border-b border-slate-100 pb-3">
+                Filters
+              </h3>
+
+              {/* Order Status Filters */}
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                  ORDER STATUS
+                </span>
+                <div className="space-y-1.5 text-xs font-semibold text-slate-700">
+                  {["All", "In Transit", "Delivered", "Cancelled"].map((st) => (
+                    <label key={st} className="flex items-center gap-2 cursor-pointer hover:text-[#2874f0]">
+                      <input
+                        type="radio"
+                        name="statusFilter"
+                        checked={statusFilter === st}
+                        onChange={() => setStatusFilter(st)}
+                        className="text-[#2874f0] focus:ring-[#2874f0]"
+                      />
+                      <span>{st === "All" ? "All Orders" : st}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Trust Badge */}
+              <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-lg text-[11px] text-slate-600 space-y-1">
+                <span className="font-bold text-[#2874f0] flex items-center gap-1">
+                  🛡️ Buyer Assurance
+                </span>
+                <p>100% verified orders dispatched directly by certified merchants.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT: SEARCH & ORDERS LIST (9 COLS) */}
+          <div className="lg:col-span-9 space-y-3">
+            
+            {/* Search Input */}
+            <div className="bg-white rounded-xl border border-slate-200 p-2 shadow-xs flex items-center gap-2">
+              <span className="text-slate-400 pl-2">🔍</span>
               <input
                 type="text"
-                placeholder="Search all orders"
+                placeholder="Search your orders by product name or order ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 shadow-inner"
+                className="w-full px-2 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none"
               />
-            </div>
-            <button
-              onClick={() => {}}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition shadow-xs"
-            >
-              Search Orders
-            </button>
-          </div>
-        </div>
-
-        {/* E-Commerce Standard Tabs Bar */}
-        <div className="border-b border-slate-300 flex items-center gap-6 text-xs sm:text-sm font-bold overflow-x-auto scrollbar-none">
-          {[
-            { id: "orders", label: "Orders" },
-            { id: "buy_again", label: "Buy Again" },
-            { id: "not_shipped", label: "Not Yet Shipped" },
-            { id: "cancelled", label: "Cancelled Orders" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`pb-3 transition relative whitespace-nowrap ${
-                activeTab === tab.id
-                  ? "text-slate-900 border-b-2 border-amber-500 font-extrabold"
-                  : "text-slate-500 hover:text-slate-900"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* ================= TAB 1: ALL ORDERS ================= */}
-        {activeTab !== "buy_again" && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs text-slate-600 font-medium">
-              <span>
-                <strong className="text-slate-900">{filteredOrders.length} orders</strong> placed in
-              </span>
-              <select
-                value={timeFilter}
-                onChange={(e) => setTimeFilter(e.target.value)}
-                className="bg-white border border-slate-300 rounded-lg px-3 py-1 text-xs font-medium focus:outline-none shadow-xs"
+              <button
+                type="button"
+                className="px-4 py-1.5 bg-[#2874f0] hover:bg-[#1e60db] text-white text-xs font-bold rounded-lg shadow-xs transition"
               >
-                <option value="past_3_months">past 3 months</option>
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-              </select>
+                Search
+              </button>
             </div>
 
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200">
-                <div className="w-10 h-10 border-4 border-amber-300 border-t-amber-600 rounded-full animate-spin mb-3" />
-                <p className="text-xs text-slate-500 font-bold">Loading your orders...</p>
-              </div>
-            ) : filteredOrders.length === 0 ? (
-              <div className="bg-white p-12 text-center rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                <p className="text-sm font-bold text-slate-700">You have no {activeTab === "not_shipped" ? "unshipped" : "matching"} orders.</p>
-                <Link
-                  to="/"
-                  className="inline-block px-5 py-2 bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-black rounded-xl shadow-xs transition"
-                >
-                  Continue Shopping
+            {/* Orders Cards */}
+            {filteredOrders.length === 0 ? (
+              <div className="bg-white rounded-xl border border-slate-200 p-12 text-center shadow-xs space-y-3">
+                <div className="text-4xl">📦</div>
+                <h3 className="text-base font-bold text-slate-800">No orders found</h3>
+                <p className="text-xs text-slate-500">You haven't placed any orders matching this filter.</p>
+                <Link to="/" className="inline-block px-4 py-2 bg-[#2874f0] text-white text-xs font-bold rounded-lg">
+                  Explore Products
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
-                {filteredOrders.map((order) => (
-                  <div
-                    key={order._id}
-                    className="bg-white rounded-2xl border border-slate-300 shadow-sm overflow-hidden"
-                  >
-                    {/* Amazon-Style Grey Ribbon Header */}
-                    <div className="bg-[#f0f2f2] border-b border-slate-300 p-3.5 sm:px-6 flex flex-wrap items-center justify-between gap-4 text-xs">
-                      <div className="flex flex-wrap items-center gap-6 sm:gap-10">
-                        <div>
-                          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold block">
-                            ORDER PLACED
-                          </span>
-                          <span className="text-slate-800 font-semibold">
-                            {new Date(order.createdAt || Date.now()).toLocaleDateString("en-US", {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </div>
+              <div className="space-y-3">
+                {filteredOrders.map((order, idx) => {
+                  const firstItem = order.items?.[0] || { name: "Selected Product", price: order.totalAmount };
+                  const isDelivered = order.status === "Delivered";
 
-                        <div>
-                          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold block">
-                            TOTAL
-                          </span>
-                          <span className="text-slate-800 font-bold">
-                            ${Number(order.totalAmount).toFixed(2)}
-                          </span>
-                        </div>
-
-                        <div>
-                          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold block">
-                            SHIP TO
-                          </span>
-                          <span className="text-indigo-700 font-bold hover:underline cursor-pointer">
-                            {order.shippingAddress?.split(",")[0] || "Anuj"} ▾
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4 text-right">
-                        <div>
-                          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-bold block">
-                            ORDER # {String(order._id).slice(-14).toUpperCase()}
-                          </span>
-                          <div className="flex items-center gap-2 justify-end mt-0.5">
-                            <button
-                              onClick={() => setSelectedTrackingOrder(order)}
-                              className="text-indigo-700 hover:underline hover:text-indigo-900 font-semibold"
-                            >
-                              View order details
-                            </button>
-                            <span className="text-slate-300">|</span>
-                            <button
-                              onClick={() => setSelectedInvoiceOrder(order)}
-                              className="text-indigo-700 hover:underline hover:text-indigo-900 font-semibold"
-                            >
-                              Invoice ▾
-                            </button>
+                  return (
+                    <div
+                      key={`${order._id || 'ord'}-${idx}`}
+                      className="bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all duration-200 p-4 sm:p-5 flex flex-col justify-between space-y-4"
+                    >
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        
+                        {/* Left: Thumbnail + Title */}
+                        <div className="flex items-start gap-4 flex-1">
+                          <img
+                            src={getProductImage(firstItem)}
+                            alt={firstItem.name}
+                            onError={(e) => handleImageError(e, firstItem.name)}
+                            className="w-16 h-16 sm:w-20 sm:h-20 bg-slate-50 border border-slate-200 rounded-lg object-contain p-1 shrink-0"
+                          />
+                          <div className="space-y-1">
+                            <h3 className="text-xs sm:text-sm font-bold text-slate-900 hover:text-[#2874f0] transition line-clamp-2">
+                              {firstItem.name}
+                            </h3>
+                            <div className="text-[11px] text-slate-500 font-medium">
+                              Seller: <span className="text-slate-800 font-bold">{order.vendorStore || "Verified Store"}</span>
+                            </div>
+                            <div className="text-xs font-black text-slate-900 pt-0.5">
+                              ${Number(order.totalAmount || firstItem.price).toFixed(2)}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    {/* Order Body */}
-                    <div className="p-4 sm:p-6 space-y-6">
-                      
-                      {/* Prominent Status Heading */}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          {order.status === "Delivered" ? (
-                            <span className="text-emerald-600 text-lg font-black">✓</span>
-                          ) : (
-                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
-                          )}
-                          <h2 className="text-base sm:text-lg font-black text-slate-900">
-                            {order.statusMessage || (order.status === "Delivered" ? "Delivered" : "Arriving Soon")}
-                          </h2>
+                        {/* Middle/Right: Status with Flipkart Green/Blue dot */}
+                        <div className="sm:text-right space-y-1 shrink-0">
+                          <div className="flex items-center sm:justify-end gap-2 text-xs font-bold">
+                            <span className={`w-2.5 h-2.5 rounded-full ${isDelivered ? "bg-[#388e3c]" : "bg-[#2874f0] animate-ping"}`} />
+                            <span className={isDelivered ? "text-[#388e3c]" : "text-[#2874f0]"}>
+                              {order.statusMessage || (isDelivered ? "Delivered" : "In Transit")}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-400">
+                            {order.statusDetail || "Your item has been tracked."}
+                          </div>
                         </div>
-                        <p className="text-xs text-slate-500 font-medium ml-4 mt-0.5">
-                          {order.statusDetail || `Sold by ${order.vendorStore}`}
-                        </p>
+
                       </div>
 
-                      {/* Items & Actions 2-Column Layout */}
-                      <div className="space-y-6">
-                        {order.items?.map((item, idx) => (
-                          <div
-                            key={idx}
-                            className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-100 last:border-0 last:pb-0"
+                      {/* Bottom Action Buttons Bar */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 text-xs font-bold">
+                        <div className="flex items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTrackingOrder(order)}
+                            className="text-[#2874f0] hover:underline flex items-center gap-1 cursor-pointer"
                           >
-                            {/* Product Info Left Column */}
-                            <div className="flex items-start gap-4 flex-1">
-                              <img
-                                src={getProductImage(item)}
-                                alt={item.name}
-                                className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-slate-200 bg-white shadow-xs flex-shrink-0"
-                                onError={(e) => handleImageError(e, item)}
-                              />
-                              <div className="space-y-1.5">
-                                <Link
-                                  to="/"
-                                  className="text-xs sm:text-sm font-bold text-indigo-700 hover:text-amber-700 hover:underline line-clamp-2"
-                                >
-                                  {item.name}
-                                </Link>
-                                
-                                <span className="text-xs text-slate-500 block font-medium">
-                                  Return eligible through {order.returnEligibleUntil || "30 days after delivery"}
-                                </span>
+                            <span>📍</span> Track Package
+                          </button>
+                          <span className="text-slate-300">•</span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedInvoiceOrder(order)}
+                            className="text-slate-600 hover:text-[#2874f0] flex items-center gap-1 cursor-pointer"
+                          >
+                            <span>📄</span> Invoice
+                          </button>
+                        </div>
 
-                                <span className="text-xs font-black text-slate-900 block">
-                                  ${Number(item.price).toFixed(2)} <span className="text-slate-400 font-normal">Qty: {item.quantity || 1}</span>
-                                </span>
-
-                                <div className="pt-2 flex items-center gap-2">
-                                  <button
-                                    onClick={() => handleBuyAgain(item)}
-                                    className="px-4 py-1.5 bg-[#ffd814] hover:bg-[#f7ca00] text-slate-900 text-xs font-bold rounded-full shadow-xs transition flex items-center gap-1.5 active:scale-95 border border-[#fcd200]"
-                                  >
-                                    <span>🛒</span> Buy it again
-                                  </button>
-                                  <Link
-                                    to="/"
-                                    className="px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-full border border-slate-300 shadow-xs transition"
-                                  >
-                                    View item
-                                  </Link>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Action Buttons Right Column */}
-                            <div className="flex flex-col gap-2 w-full md:w-56 flex-shrink-0">
-                              <button
-                                onClick={() => setSelectedTrackingOrder(order)}
-                                className="w-full py-2 bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 text-xs font-bold rounded-xl shadow-xs transition border border-[#fcd200] text-center"
-                              >
-                                Track package
-                              </button>
-
-                              <button
-                                onClick={() => setSelectedReviewItem(item)}
-                                className="w-full py-1.5 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-xl border border-slate-300 shadow-xs transition text-center"
-                              >
-                                Write a product review
-                              </button>
-
-                              <button
-                                onClick={() => setSelectedReturnOrder(order)}
-                                className="w-full py-1.5 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-xl border border-slate-300 shadow-xs transition text-center"
-                              >
-                                Return or replace items
-                              </button>
-
-                              <Link
-                                to={`/store/${order.tenantSlug || "audiophile-store"}`}
-                                className="w-full py-1.5 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold rounded-xl border border-slate-300 shadow-xs transition text-center"
-                              >
-                                Leave seller feedback
-                              </Link>
-                            </div>
-                          </div>
-                        ))}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedReviewItem(firstItem)}
+                            className="text-[#2874f0] hover:text-[#1e60db] px-2 py-1 bg-blue-50 rounded border border-blue-200 cursor-pointer"
+                          >
+                            ★ Rate & Review
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleBuyAgain(firstItem)}
+                            className="px-3 py-1 bg-[#ff9f00] hover:bg-[#f59400] text-slate-950 font-black rounded cursor-pointer shadow-xs"
+                          >
+                            Buy Again
+                          </button>
+                        </div>
                       </div>
 
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
+
           </div>
-        )}
 
-        {/* ================= TAB 2: BUY AGAIN ================= */}
-        {activeTab === "buy_again" && (
-          <div className="space-y-4">
-            <h3 className="text-base font-black text-slate-900">Buy Again from Past Orders</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {allPurchasedItems.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:shadow-md transition"
-                >
-                  <div>
-                    <img
-                      src={getProductImage(item)}
-                      alt={item.name}
-                      className="w-full h-40 object-cover rounded-xl mb-3 border border-slate-100 bg-slate-50"
-                      onError={(e) => handleImageError(e, item)}
-                    />
-                    <h4 className="text-xs font-bold text-slate-900 line-clamp-2 mb-1">
-                      {item.name}
-                    </h4>
-                    <span className="text-sm font-black text-slate-900 block mb-3">
-                      ${Number(item.price).toFixed(2)}
+        </div>
+
+      </main>
+
+      {/* ================= 1. TRACKING TIMELINE MODAL ================= */}
+      {selectedTrackingOrder && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-5 sm:p-6 space-y-4 animate-slide-down">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-sm font-black text-slate-900">Track Order #{selectedTrackingOrder._id?.slice(-8)}</h3>
+                <span className="text-[11px] text-slate-500">Carrier: {selectedTrackingOrder.carrier || "SuperFast Priority"}</span>
+              </div>
+              <button
+                onClick={() => setSelectedTrackingOrder(null)}
+                className="text-slate-400 hover:text-slate-700 text-lg font-black cursor-pointer"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* 5-Step Delivery Timeline */}
+            <div className="space-y-4 py-2">
+              {[
+                { title: "Order Confirmed", time: "Aug 14, 9:30 AM", done: true },
+                { title: "Packed & Verified", time: "Aug 14, 2:15 PM", done: true },
+                { title: "Shipped from Regional Hub", time: "Aug 15, 6:00 AM", done: true },
+                { title: "Out for Delivery", time: "Aug 16, 9:00 AM", done: selectedTrackingOrder.status === "Delivered" || selectedTrackingOrder.status === "In Transit" },
+                { title: "Delivered", time: "Estimated Tomorrow", done: selectedTrackingOrder.status === "Delivered" },
+              ].map((step, idx) => (
+                <div key={idx} className="flex items-start gap-3">
+                  <div className="flex flex-col items-center">
+                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${step.done ? "bg-[#388e3c] text-white" : "bg-slate-200 text-slate-400"}`}>
+                      {step.done ? "✓" : idx + 1}
                     </span>
+                    {idx < 4 && <span className={`w-0.5 h-6 ${step.done ? "bg-[#388e3c]" : "bg-slate-200"}`} />}
                   </div>
-
-                  <button
-                    onClick={() => handleBuyAgain(item)}
-                    className="w-full py-2 bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 text-xs font-bold rounded-xl shadow-xs transition border border-[#fcd200]"
-                  >
-                    Add to Cart
-                  </button>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">{step.title}</div>
+                    <div className="text-[10px] text-slate-400">{step.time}</div>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
-      </main>
 
-      {/* ================= LIVE TRACKING PACKAGE MODAL ================= */}
-      {selectedTrackingOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 relative animate-slide-up text-slate-900 space-y-5">
-            <button
-              onClick={() => setSelectedTrackingOrder(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-lg font-bold"
-            >
-              ✕
-            </button>
-
-            <div className="border-b border-slate-100 pb-3">
-              <span className="text-[10px] uppercase font-black tracking-wider text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200">
-                {selectedTrackingOrder.carrier}
-              </span>
-              <h3 className="text-lg font-black text-slate-900 mt-1">
-                {selectedTrackingOrder.statusMessage}
-              </h3>
-              <p className="text-xs text-slate-500 font-mono mt-0.5">
-                Tracking ID: {selectedTrackingOrder.trackingNumber}
-              </p>
-            </div>
-
-            {/* Courier Steps Visual Timeline */}
-            <div className="space-y-4 text-xs relative pl-6 border-l-2 border-emerald-500 py-1">
-              <div className="relative">
-                <span className="absolute -left-[31px] top-0.5 w-3.5 h-3.5 rounded-full bg-emerald-600 border-2 border-white ring-4 ring-emerald-100" />
-                <span className="font-black text-slate-900 block">Out for Delivery</span>
-                <span className="text-slate-400 text-[11px]">Today, 8:30 AM • On the carrier vehicle for delivery</span>
-              </div>
-
-              <div className="relative">
-                <span className="absolute -left-[31px] top-0.5 w-3.5 h-3.5 rounded-full bg-emerald-600 border-2 border-white" />
-                <span className="font-black text-slate-900 block">Package arrived at local carrier facility</span>
-                <span className="text-slate-400 text-[11px]">Yesterday, 11:45 PM • Springfield, OR</span>
-              </div>
-
-              <div className="relative">
-                <span className="absolute -left-[31px] top-0.5 w-3.5 h-3.5 rounded-full bg-slate-300 border-2 border-white" />
-                <span className="font-bold text-slate-700 block">Carrier picked up the package</span>
-                <span className="text-slate-400 text-[11px]">{selectedTrackingOrder.vendorStore}</span>
-              </div>
-            </div>
-
-            <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-xs flex justify-between items-center font-medium">
-              <span className="text-slate-600">Delivering to:</span>
-              <span className="font-bold text-slate-900 truncate max-w-[240px]">
-                {selectedTrackingOrder.shippingAddress}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= DIGITAL INVOICE RECEIPT MODAL ================= */}
-      {selectedInvoiceOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 relative animate-slide-up text-slate-900 space-y-4">
-            <button
-              onClick={() => setSelectedInvoiceOrder(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-lg font-bold"
-            >
-              ✕
-            </button>
-
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <div>
-                <h3 className="font-black text-slate-900 text-lg">Final Details for Order</h3>
-                <span className="text-xs text-slate-500 font-mono">
-                  #{selectedInvoiceOrder._id}
-                </span>
-              </div>
-              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 font-black text-xs rounded-full">
-                PAID
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div>
-                <strong className="text-slate-900 block mb-0.5">Shipping Address:</strong>
-                <p className="text-slate-600">{selectedInvoiceOrder.shippingAddress}</p>
-              </div>
-              <div>
-                <strong className="text-slate-900 block mb-0.5">Payment Method:</strong>
-                <p className="text-slate-600">{selectedInvoiceOrder.paymentMethod}</p>
-              </div>
-            </div>
-
-            <div className="border border-slate-200 rounded-2xl overflow-hidden text-xs">
-              <table className="w-full text-left">
-                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 text-[10px] uppercase">
-                  <tr>
-                    <th className="p-3">Items Ordered</th>
-                    <th className="p-3">Qty</th>
-                    <th className="p-3 text-right">Price</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-medium">
-                  {selectedInvoiceOrder.items?.map((it, idx) => (
-                    <tr key={idx}>
-                      <td className="p-3 font-bold text-slate-900">{it.name}</td>
-                      <td className="p-3 text-slate-500">{it.quantity || 1}</td>
-                      <td className="p-3 text-right font-black text-slate-900">
-                        ${(it.price * (it.quantity || 1)).toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <div className="bg-slate-50 p-4 border-t border-slate-200 space-y-1 text-right text-xs">
-                <div className="flex justify-between text-slate-600">
-                  <span>Item(s) Subtotal:</span>
-                  <span>${(selectedInvoiceOrder.subtotal || selectedInvoiceOrder.totalAmount * 0.92).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Shipping & Handling:</span>
-                  <span>$0.00</span>
-                </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Estimated Tax:</span>
-                  <span>${(selectedInvoiceOrder.tax || selectedInvoiceOrder.totalAmount * 0.08).toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between font-black text-slate-900 text-sm pt-2 border-t border-slate-200">
-                  <span>Grand Total:</span>
-                  <span className="text-indigo-700">${Number(selectedInvoiceOrder.totalAmount).toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end gap-2">
+            <div className="flex justify-end pt-2 border-t border-slate-100">
               <button
-                onClick={() => window.print()}
-                className="px-5 py-2.5 bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs hover:bg-slate-800 transition"
+                onClick={() => setSelectedTrackingOrder(null)}
+                className="px-4 py-2 bg-[#2874f0] text-white text-xs font-bold rounded-lg cursor-pointer"
               >
-                🖨️ Print this page
+                Close Tracking
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================= WRITE REVIEW MODAL ================= */}
+      {/* ================= 2. INVOICE MODAL ================= */}
+      {selectedInvoiceOrder && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full p-6 space-y-4 animate-slide-down">
+            <div className="flex justify-between border-b border-slate-200 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-900">Tax Invoice</h3>
+                <span className="text-xs text-slate-500 font-mono">Invoice #{selectedInvoiceOrder._id}</span>
+              </div>
+              <button onClick={() => setSelectedInvoiceOrder(null)} className="text-slate-400 text-lg font-black">×</button>
+            </div>
+
+            <div className="text-xs space-y-2 text-slate-700">
+              <div className="flex justify-between">
+                <span>Sold By:</span>
+                <span className="font-bold">{selectedInvoiceOrder.vendorStore || "Verified Store"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Payment Method:</span>
+                <span className="font-bold">{selectedInvoiceOrder.paymentMethod || "Prepaid"}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-100 pt-2 text-sm font-black text-slate-900">
+                <span>Total Amount Paid:</span>
+                <span className="text-[#388e3c]">${Number(selectedInvoiceOrder.totalAmount).toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg cursor-pointer"
+              >
+                🖨️ Print Invoice
+              </button>
+              <button
+                onClick={() => setSelectedInvoiceOrder(null)}
+                className="px-4 py-2 bg-[#2874f0] text-white text-xs font-bold rounded-lg cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= 3. RATE & REVIEW MODAL ================= */}
       {selectedReviewItem && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative animate-slide-up text-slate-900 space-y-4">
-            <button
-              onClick={() => setSelectedReviewItem(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-lg font-bold"
-            >
-              ✕
-            </button>
-
-            <div>
-              <h3 className="font-black text-slate-900 text-base">Create Review</h3>
-              <p className="text-xs text-indigo-700 font-bold mt-0.5 line-clamp-1">{selectedReviewItem.name}</p>
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <form onSubmit={handleSubmitReview} className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-4 animate-slide-down">
+            <div className="flex justify-between border-b border-slate-100 pb-2">
+              <h3 className="text-sm font-black text-slate-900">Rate Product</h3>
+              <button type="button" onClick={() => setSelectedReviewItem(null)} className="text-slate-400 text-lg font-black">×</button>
             </div>
 
-            <form onSubmit={handleSubmitReview} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Overall Rating</label>
-                <div className="flex items-center gap-1.5 text-2xl cursor-pointer">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setReviewForm({ ...reviewForm, rating: star })}
-                      className={`transition transform hover:scale-110 ${
-                        star <= reviewForm.rating ? "text-amber-400" : "text-slate-200"
-                      }`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="text-xs font-bold text-slate-700">{selectedReviewItem.name}</div>
 
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Add a written review</label>
-                <textarea
-                  rows={3}
-                  required
-                  placeholder="What did you like or dislike? What did you use this product for?"
-                  value={reviewForm.comment}
-                  onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
-                  className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 font-medium"
-                />
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Your Rating:</label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setReviewRating(s)}
+                    className={`text-2xl ${reviewRating >= s ? "text-amber-400" : "text-slate-300"}`}
+                  >
+                    ★
+                  </button>
+                ))}
               </div>
+            </div>
 
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedReviewItem(null)}
-                  className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 font-bold rounded-xl shadow-xs border border-[#fcd200]"
-                >
-                  Submit
-                </button>
-              </div>
-            </form>
-          </div>
+            <div>
+              <label className="block text-xs font-bold text-slate-600 mb-1">Feedback Comments:</label>
+              <textarea
+                rows={3}
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="What did you love about this item?"
+                className="w-full p-2.5 border border-slate-200 rounded-lg text-xs"
+                required
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setSelectedReviewItem(null)}
+                className="px-3 py-1.5 bg-slate-200 text-slate-700 text-xs font-bold rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-1.5 bg-[#2874f0] text-white text-xs font-black rounded-lg"
+              >
+                Submit Review
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
-      {/* ================= RETURN / REPLACE MODAL ================= */}
-      {selectedReturnOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative animate-slide-up text-slate-900 space-y-4">
-            <button
-              onClick={() => setSelectedReturnOrder(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-lg font-bold"
-            >
-              ✕
-            </button>
-
-            <div>
-              <h3 className="font-black text-slate-900 text-base">Return or Replace Items</h3>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">Order #{selectedReturnOrder._id.slice(-10)}</p>
-            </div>
-
-            <form onSubmit={handleReturnSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-700 font-bold mb-1">Why are you returning this?</label>
-                <select
-                  value={returnReason}
-                  onChange={(e) => setReturnReason(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none font-medium"
-                >
-                  <option value="Item arrived late">Item arrived late</option>
-                  <option value="Item defective or doesn't work">Item defective or doesn't work</option>
-                  <option value="Bought by mistake">Bought by mistake</option>
-                  <option value="Better price found elsewhere">Better price found elsewhere</option>
-                  <option value="Item different from website description">Item different from website description</option>
-                </select>
-              </div>
-
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px] font-medium">
-                💡 A prepaid return shipping label will be generated for drop-off at any carrier facility.
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedReturnOrder(null)}
-                  className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2 bg-[#ffd814] hover:bg-[#f7ca00] text-slate-950 font-bold rounded-xl shadow-xs border border-[#fcd200]"
-                >
-                  Confirm Return
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

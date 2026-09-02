@@ -7,11 +7,11 @@ export default function CustomerReviewsSection({
 }) {
   const STORAGE_KEY = `customer_reviews_${targetId}`;
 
-  // Default seed reviews if none found
+  // Default seed reviews
   const defaultReviews = [
     {
       id: "rev_1",
-      customerName: "Gaurav",
+      customerName: "Gaurav S.",
       rating: 5,
       title: "Outstanding build quality and fast shipping!",
       comment: "Super impressed with this purchase. Sound clarity is unbelievable and the packaging was top tier. Definitely ordering again.",
@@ -23,7 +23,7 @@ export default function CustomerReviewsSection({
     },
     {
       id: "rev_2",
-      customerName: "Srivalli",
+      customerName: "Srivalli K.",
       rating: 5,
       title: "Worth every single penny!",
       comment: "Exceeded my expectations. Great battery life and very comfortable for long sessions. 10/10 recommend.",
@@ -35,8 +35,8 @@ export default function CustomerReviewsSection({
     },
     {
       id: "rev_3",
-      customerName: "Riya",
-      rating: 5,
+      customerName: "Riya M.",
+      rating: 4,
       title: "Solid product, very happy with performance",
       comment: "Works exactly as described. Material feels durable and customer service was quick to respond to my inquiries.",
       date: "Aug 12, 2026",
@@ -47,7 +47,7 @@ export default function CustomerReviewsSection({
     },
     {
       id: "rev_4",
-      customerName: "Anuj",
+      customerName: "Anuj B.",
       rating: 5,
       title: "Fast delivery & premium packaging",
       comment: "Arrived earlier than scheduled. The quality is supreme and feels very robust.",
@@ -69,7 +69,7 @@ export default function CustomerReviewsSection({
 
   const [showForm, setShowForm] = useState(false);
   const [starFilter, setStarFilter] = useState("All");
-  const [sortBy, setSortBy] = useState("recent"); // 'recent' | 'highest' | 'helpful'
+  const [sortBy, setSortBy] = useState("recent");
   const [toastMessage, setToastMessage] = useState("");
 
   // Review Form State
@@ -94,332 +94,224 @@ export default function CustomerReviewsSection({
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(reviews));
-      // Also broadcast to global storage so Vendor Dashboard picks it up
       const allVendorReviews = JSON.parse(localStorage.getItem("all_vendor_reviews") || "[]");
       const updatedGlobal = [...reviews, ...allVendorReviews.filter((r) => !reviews.some((cr) => cr.id === r.id))];
       localStorage.setItem("all_vendor_reviews", JSON.stringify(updatedGlobal));
     } catch (e) {}
   }, [reviews, STORAGE_KEY]);
 
-  const handleRatingHover = (val) => setHoverRating(val);
-  const handleRatingLeave = () => setHoverRating(0);
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((acc, r) => acc + Number(r.rating || 5), 0) / reviews.length).toFixed(1)
+    : "5.0";
 
-  const toggleTag = (tag) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  };
+  const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+  reviews.forEach((r) => {
+    const star = Math.min(5, Math.max(1, Math.round(Number(r.rating) || 5)));
+    ratingCounts[star] = (ratingCounts[star] || 0) + 1;
+  });
 
   const handleSubmitReview = (e) => {
     e.preventDefault();
-    if (!customerName.trim()) {
-      alert("Please provide your name.");
-      return;
-    }
-    if (!reviewComment.trim()) {
-      alert("Please write a short review comment.");
+    if (!reviewTitle.trim() || !reviewComment.trim()) {
+      alert("Please enter a review headline and comment.");
       return;
     }
 
     const newReview = {
-      id: "rev_" + Date.now(),
-      customerName: customerName.trim(),
+      id: `rev_${Date.now()}`,
+      customerName: customerName.trim() || "Verified Shopper",
       rating: Number(rating),
-      title: reviewTitle.trim() || `${rating}-Star Review`,
+      title: reviewTitle.trim(),
       comment: reviewComment.trim(),
-      date: "Just now",
+      date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
       verifiedPurchase: true,
       helpfulCount: 0,
-      vendorReply: "",
       tags: selectedTags,
     };
 
     setReviews([newReview, ...reviews]);
-    setShowForm(false);
     setReviewTitle("");
     setReviewComment("");
-    setToastMessage("🎉 Thank you! Your review has been published.");
+    setShowForm(false);
+    setToastMessage("Thank you! Your verified review has been posted 🎉");
     setTimeout(() => setToastMessage(""), 3500);
   };
 
-  const handleHelpfulClick = (reviewId) => {
+  const handleHelpful = (id) => {
     setReviews((prev) =>
-      prev.map((r) =>
-        r.id === reviewId ? { ...r, helpfulCount: (r.helpfulCount || 0) + 1 } : r
-      )
+      prev.map((r) => (r.id === id ? { ...r, helpfulCount: (r.helpfulCount || 0) + 1 } : r))
     );
-    setToastMessage("Thank you for your feedback!");
-    setTimeout(() => setToastMessage(""), 2000);
   };
 
-  // Metrics computation
-  const totalReviews = reviews.length;
-  const avgRating = totalReviews > 0
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1)
-    : "5.0";
-
-  const ratingCounts = {
-    5: reviews.filter((r) => r.rating === 5).length,
-    4: reviews.filter((r) => r.rating === 4).length,
-    3: reviews.filter((r) => r.rating === 3).length,
-    2: reviews.filter((r) => r.rating === 2).length,
-    1: reviews.filter((r) => r.rating === 1).length,
-  };
-
-  // Filter & Sort reviews
-  let processedReviews = reviews.filter((r) => {
+  const filteredReviews = reviews.filter((r) => {
     if (starFilter === "All") return true;
-    return r.rating === Number(starFilter);
+    return Number(r.rating) === Number(starFilter);
+  }).sort((a, b) => {
+    if (sortBy === "helpful") return (b.helpfulCount || 0) - (a.helpfulCount || 0);
+    if (sortBy === "rating_high") return b.rating - a.rating;
+    if (sortBy === "rating_low") return a.rating - b.rating;
+    return 0; // recent
   });
 
-  if (sortBy === "recent") {
-    // Keep top-order
-  } else if (sortBy === "highest") {
-    processedReviews = [...processedReviews].sort((a, b) => b.rating - a.rating);
-  } else if (sortBy === "helpful") {
-    processedReviews = [...processedReviews].sort((a, b) => (b.helpfulCount || 0) - (a.helpfulCount || 0));
-  }
-
-  const ratingDescriptions = {
-    5: "Exceptional — Loved everything about it!",
-    4: "Very Good — Met all expectations",
-    3: "Average — Decent, standard quality",
-    2: "Below Expectations — Room for improvement",
-    1: "Poor — Did not match description",
-  };
-
   return (
-    <section className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-8">
+    <div className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-7 shadow-sm space-y-6">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold border border-slate-700 animate-slide-up">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-          {toastMessage}
+        <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2">
+          <span>✓</span>
+          <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* HEADER: Rating Overview & CTA */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-100">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
-              ⭐ Verified Reviews
-            </span>
-            <span className="text-xs text-slate-500 font-semibold">
-              Authentic Customer Feedback
+      {/* Header & Overall Summary */}
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-100">
+        {/* Left Rating Overview */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl sm:text-2xl font-black text-slate-900">
+              Ratings & Reviews
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            Customer Reviews & Ratings
-          </h2>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Read real buyer experiences or share your honest review for {targetTitle}.
-          </p>
-        </div>
 
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className={`px-5 py-3 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95 ${
-            showForm
-              ? "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300"
-              : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-100 hover:scale-105"
-          }`}
-        >
-          <span>{showForm ? "✕ Cancel Review" : "✍️ Write a Customer Review"}</span>
-        </button>
-      </div>
-
-      {/* RATING BREAKDOWN CARD */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-6 rounded-3xl border border-slate-200/80 items-center">
-        {/* Left: Big Score */}
-        <div className="text-center md:border-r md:border-slate-200 md:pr-6 space-y-1">
-          <div className="text-5xl font-black text-slate-900">{avgRating}</div>
-          <div className="flex items-center justify-center gap-1 text-amber-400 text-lg">
-            {"★".repeat(Math.round(Number(avgRating)))}
-            {"☆".repeat(5 - Math.round(Number(avgRating)))}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 bg-[#388e3c] text-white px-3 py-1.5 rounded-xl font-black text-2xl shadow-xs">
+              <span>{avgRating}</span>
+              <span className="text-base">★</span>
+            </div>
+            <div>
+              <div className="text-xs font-black text-slate-900">
+                {reviews.length} Verified Customer Ratings
+              </div>
+              <div className="text-[11px] text-slate-500 font-medium">
+                100% Authentic Customer Feedback
+              </div>
+            </div>
           </div>
-          <span className="text-xs text-slate-500 font-bold block">
-            Based on {totalReviews} verified ratings
-          </span>
-          <span className="text-[10px] text-emerald-600 font-bold block mt-1">
-            ✓ 98% Recommended by buyers
-          </span>
         </div>
 
-        {/* Center: Progress Bars */}
-        <div className="md:col-span-2 space-y-2">
-          {[5, 4, 3, 2, 1].map((stars) => {
-            const count = ratingCounts[stars] || 0;
-            const percentage = totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+        {/* Rating Breakdown Bars */}
+        <div className="flex-1 max-w-xs space-y-1.5">
+          {[5, 4, 3, 2, 1].map((star) => {
+            const count = ratingCounts[star] || 0;
+            const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
             return (
-              <div
-                key={stars}
-                onClick={() => setStarFilter(starFilter === String(stars) ? "All" : String(stars))}
-                className="flex items-center gap-3 text-xs font-bold text-slate-600 hover:text-indigo-600 cursor-pointer group"
-              >
-                <span className="w-12 text-slate-700 font-black flex items-center gap-0.5">
-                  {stars} <span className="text-amber-500">★</span>
-                </span>
-                <div className="flex-1 h-2.5 bg-slate-200 rounded-full overflow-hidden">
+              <div key={star} className="flex items-center gap-2 text-xs text-slate-600 font-bold">
+                <span className="w-6">{star} ★</span>
+                <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    style={{ width: `${percentage}%` }}
-                    className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full transition-all duration-500 group-hover:brightness-110"
+                    className={`h-full rounded-full ${
+                      star >= 4 ? "bg-[#388e3c]" : star === 3 ? "bg-amber-400" : "bg-rose-500"
+                    }`}
+                    style={{ width: `${pct}%` }}
                   />
                 </div>
-                <span className="w-12 text-right text-slate-400 text-[11px] font-semibold">
-                  {percentage}% ({count})
-                </span>
+                <span className="w-8 text-right text-[11px] text-slate-400">{count}</span>
               </div>
             );
           })}
         </div>
+
+        {/* Rate Product Button */}
+        <div>
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="px-5 py-2.5 bg-[#2874f0] hover:bg-[#1e60db] text-white text-xs font-black rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+          >
+            {showForm ? "Cancel Review" : "★ Rate & Review Product"}
+          </button>
+        </div>
       </div>
 
-      {/* SUBMISSION FORM (COLLAPSIBLE) */}
+      {/* Review Submission Form Drawer */}
       {showForm && (
-        <form
-          onSubmit={handleSubmitReview}
-          className="bg-gradient-to-b from-indigo-50/50 to-white p-6 sm:p-8 rounded-3xl border border-indigo-200 shadow-sm space-y-5 animate-slide-up"
-        >
-          <div className="border-b border-indigo-100 pb-3">
-            <h3 className="text-base font-black text-slate-900">
-              Share Your Product Experience
-            </h3>
-            <p className="text-xs text-slate-500">
-              Your feedback helps other shoppers make informed decisions.
-            </p>
-          </div>
-
-          {/* Star Picker */}
+        <form onSubmit={handleSubmitReview} className="bg-slate-50 border border-slate-200 p-5 rounded-2xl space-y-4 animate-slide-down">
+          <h4 className="text-sm font-black text-slate-900">Write a Verified Review for {targetTitle}</h4>
+          
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Overall Rating:
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Your Overall Rating:</label>
             <div className="flex items-center gap-1.5">
-              {[1, 2, 3, 4, 5].map((star) => (
+              {[1, 2, 3, 4, 5].map((s) => (
                 <button
+                  key={s}
                   type="button"
-                  key={star}
-                  onClick={() => setRating(star)}
-                  onMouseEnter={() => handleRatingHover(star)}
-                  onMouseLeave={handleRatingLeave}
-                  className="text-3xl transition-transform hover:scale-125 focus:outline-none"
+                  onMouseEnter={() => setHoverRating(s)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  onClick={() => setRating(s)}
+                  className={`text-2xl cursor-pointer transition-transform ${
+                    (hoverRating || rating) >= s ? "text-amber-400 scale-110" : "text-slate-300"
+                  }`}
                 >
-                  <span
-                    className={
-                      star <= (hoverRating || rating)
-                        ? "text-amber-400"
-                        : "text-slate-200"
-                    }
-                  >
-                    ★
-                  </span>
+                  ★
                 </button>
               ))}
-              <span className="text-xs font-bold text-slate-700 ml-3">
-                {ratingDescriptions[hoverRating || rating]}
-              </span>
+              <span className="ml-2 text-xs font-bold text-slate-600">{rating} Stars</span>
             </div>
           </div>
 
-          {/* Form Inputs Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Your Full Name:
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Your Name</label>
               <input
                 type="text"
-                required
-                placeholder="e.g. Gaurav"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-indigo-600 transition"
+                placeholder="e.g. Gaurav S."
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#2874f0]"
               />
             </div>
-
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Review Headline / Summary:
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Review Headline</label>
               <input
                 type="text"
-                placeholder="e.g. Best quality I've experienced!"
                 value={reviewTitle}
                 onChange={(e) => setReviewTitle(e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-indigo-600 transition"
+                placeholder="e.g. Exceptional sound clarity & comfortable!"
+                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#2874f0]"
+                required
               />
             </div>
           </div>
 
-          {/* Detailed Review Comment */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Detailed Comments & Feedback:
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Detailed Review</label>
             <textarea
-              required
-              rows={4}
-              placeholder="What did you like or dislike about this product? How was the delivery and functionality?"
+              rows={3}
               value={reviewComment}
               onChange={(e) => setReviewComment(e.target.value)}
-              className="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:border-indigo-600 transition"
+              placeholder="What did you like or dislike? How does it perform?"
+              className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#2874f0]"
+              required
             />
           </div>
 
-          {/* Tags */}
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
-              Highlight Tags (Click to toggle):
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {availableTags.map((tag) => (
-                <button
-                  type="button"
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold transition ${
-                    selectedTags.includes(tag)
-                      ? "bg-indigo-600 text-white shadow-xs"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  {selectedTags.includes(tag) ? `✓ ${tag}` : `+ ${tag}`}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Submit Actions */}
-          <div className="flex items-center gap-3 pt-3">
-            <button
-              type="submit"
-              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl shadow-md transition active:scale-95"
-            >
-              Submit Review Now →
-            </button>
+          <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+              className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg cursor-pointer"
             >
               Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2 bg-[#ff9f00] hover:bg-[#f59400] text-slate-950 text-xs font-black rounded-lg shadow-xs cursor-pointer"
+            >
+              Submit Review
             </button>
           </div>
         </form>
       )}
 
-      {/* FILTER & SORT TOOLBAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-slate-100">
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-          <span className="text-xs text-slate-400 font-bold mr-1">Filter:</span>
+      {/* Review Filter Pills & Sorter */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           {["All", "5", "4", "3", "2", "1"].map((s) => (
             <button
               key={s}
               onClick={() => setStarFilter(s)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
                 starFilter === s
-                  ? "bg-indigo-600 text-white shadow-xs"
+                  ? "bg-[#2874f0] text-white shadow-xs font-black"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -428,118 +320,72 @@ export default function CustomerReviewsSection({
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-bold">Sort:</span>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none"
-          >
-            <option value="recent">Most Recent</option>
-            <option value="highest">Highest Rating</option>
-            <option value="helpful">Most Helpful</option>
-          </select>
-        </div>
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="px-3 py-1.5 bg-slate-50 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold focus:outline-none"
+        >
+          <option value="recent">Most Recent</option>
+          <option value="helpful">Most Helpful</option>
+          <option value="rating_high">Highest Rating</option>
+          <option value="rating_low">Lowest Rating</option>
+        </select>
       </div>
 
-      {/* REVIEW CARDS LIST */}
-      <div className="space-y-4">
-        {processedReviews.length === 0 ? (
-          <div className="text-center py-12 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-500 font-medium">
-            No reviews match your filter. Be the first to share your thoughts!
-          </div>
-        ) : (
-          processedReviews.map((review) => (
-            <div
-              key={review.id}
-              className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs hover:border-slate-300 transition space-y-3"
-            >
-              {/* Reviewer Header */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 text-white flex items-center justify-center text-sm font-black shadow-sm">
-                    {review.customerName.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-900 text-xs">
-                        {review.customerName}
-                      </span>
-                      {review.verifiedPurchase && (
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
-                          ✓ Verified Purchase
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[11px] text-slate-400 block mt-0.5">
-                      Reviewed on {review.date}
-                    </span>
-                  </div>
-                </div>
+      {/* Reviews List */}
+      <div className="divide-y divide-slate-100 space-y-4 pt-2">
+        {filteredReviews.map((rev) => (
+          <div key={rev.id} className="pt-4 first:pt-0 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="bg-[#388e3c] text-white text-[11px] font-black px-2 py-0.5 rounded flex items-center gap-0.5 shadow-xs">
+                <span>{rev.rating}</span>
+                <span>★</span>
+              </span>
+              <h4 className="text-xs font-bold text-slate-900">{rev.title}</h4>
+            </div>
 
-                {/* Stars */}
-                <div className="flex items-center gap-1 text-amber-400 text-xs font-bold bg-amber-50 px-2 py-1 rounded-lg border border-amber-200">
-                  <span>{"★".repeat(review.rating)}</span>
-                  <span className="text-slate-700 font-bold ml-1">{review.rating}.0</span>
-                </div>
-              </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              {rev.comment}
+            </p>
 
-              {/* Title & Comment */}
-              <div>
-                {review.title && (
-                  <h4 className="text-xs font-bold text-slate-900 mb-1">
-                    {review.title}
-                  </h4>
+            {/* Author info & Helpful counter */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-400">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-slate-700">{rev.customerName}</span>
+                <span>•</span>
+                {rev.verifiedPurchase && (
+                  <span className="text-emerald-700 font-bold flex items-center gap-1">
+                    <span>✓</span> Certified Buyer
+                  </span>
                 )}
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {review.comment}
-                </p>
+                <span>•</span>
+                <span>{rev.date}</span>
               </div>
 
-              {/* Review Tags */}
-              {review.tags && review.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 pt-1">
-                  {review.tags.map((t, idx) => (
-                    <span
-                      key={idx}
-                      className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold"
-                    >
-                      🏷️ {t}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Vendor Reply if present */}
-              {review.vendorReply && (
-                <div className="p-3 bg-indigo-50/60 border-l-3 border-indigo-600 rounded-r-xl text-xs space-y-1">
-                  <div className="font-bold text-indigo-900 text-[11px] flex items-center gap-1.5">
-                    <span>💬 Store Owner Response:</span>
-                  </div>
-                  <p className="text-slate-700 text-xs">{review.vendorReply}</p>
-                </div>
-              )}
-
-              {/* Footer: Helpful feedback button */}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500">
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={() => handleHelpfulClick(review.id)}
-                  className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 hover:text-indigo-600 transition"
+                  type="button"
+                  onClick={() => handleHelpful(rev.id)}
+                  className="hover:text-[#2874f0] transition flex items-center gap-1 cursor-pointer font-bold"
                 >
-                  <span>👍 Helpful</span>
-                  {review.helpfulCount > 0 && (
-                    <span className="text-slate-400 font-normal">({review.helpfulCount})</span>
-                  )}
+                  <span>👍</span>
+                  <span>Helpful ({rev.helpfulCount || 0})</span>
                 </button>
-
-                <span className="text-[11px] text-slate-400">
-                  Verified Buyer Feedback
-                </span>
               </div>
             </div>
-          ))
-        )}
+
+            {/* Vendor Reply if present */}
+            {rev.vendorReply && (
+              <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-xl text-xs space-y-1 mt-2">
+                <span className="text-[10px] font-black uppercase text-[#2874f0] tracking-wider">
+                  Official Merchant Reply:
+                </span>
+                <p className="text-slate-700 text-xs italic">{rev.vendorReply}</p>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }

@@ -7,7 +7,8 @@ import { getProductImage, handleImageError } from "../utils/imageUtils";
 import api from "../api/axios";
 
 export default function TenantStore() {
-  const { tenantSlug } = useParams();
+  const params = useParams();
+  const tenantSlug = params.slug || params.tenantSlug || "gaurav-store";
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState("");
@@ -17,7 +18,7 @@ export default function TenantStore() {
 
   const { addToCart } = useCart();
 
-  // Map known slugs to rich display titles & badges
+  // Store metadata
   const storeInfoMap = {
     "gaurav-store": {
       name: "Gaurav's Store",
@@ -27,8 +28,8 @@ export default function TenantStore() {
       reviews: 384,
       followers: "14.8k",
       shippingSpeed: "⚡ 24h Express Dispatch",
-      bannerGrad: "from-slate-900 via-indigo-950 to-slate-900",
-      avatarGrad: "from-indigo-600 to-purple-600",
+      bannerGrad: "from-[#1a56c4] via-[#2874f0] to-[#1e60db]",
+      avatarGrad: "from-blue-600 to-indigo-700",
       perk: "🔥 Free Express Shipping on orders over $50",
     },
     "srivalli-store": {
@@ -39,7 +40,7 @@ export default function TenantStore() {
       reviews: 295,
       followers: "11.2k",
       shippingSpeed: "🛡️ Insured Free Shipping",
-      bannerGrad: "from-slate-900 via-amber-950 to-slate-900",
+      bannerGrad: "from-amber-600 via-orange-600 to-amber-700",
       avatarGrad: "from-amber-600 to-orange-600",
       perk: "✨ Complimentary Genuine Leather Strap with any watch",
     },
@@ -51,400 +52,292 @@ export default function TenantStore() {
       reviews: 312,
       followers: "24.6k",
       shippingSpeed: "🌿 Free Samples with Every Order",
-      bannerGrad: "from-slate-900 via-pink-950 to-slate-900",
+      bannerGrad: "from-pink-600 via-rose-600 to-pink-700",
       avatarGrad: "from-pink-600 to-rose-500",
       perk: "✨ 20% OFF Radiance Night Serums this week",
     },
     "anuj-store": {
       name: "Anuj's Store",
       tagline: "Modern Urban Streetwear, Outerwear & Active Footwear",
-      icon: "👕",
+      icon: "👟",
       rating: 4.8,
       reviews: 245,
       followers: "18.3k",
       shippingSpeed: "📦 Standard 2-Day Delivery",
-      bannerGrad: "from-slate-900 via-emerald-950 to-slate-900",
+      bannerGrad: "from-emerald-600 via-teal-600 to-emerald-700",
       avatarGrad: "from-emerald-600 to-teal-600",
       perk: "👕 Buy 2 Get 1 Free on all Oversized Tees",
-    },
-    "audiophile-store": {
-      name: "Gaurav's Store",
-      tagline: "High-Fidelity Studio Sound & Wireless Acoustics",
-      icon: "🎧",
-      rating: 4.9,
-      reviews: 342,
-      followers: "12.4k",
-      shippingSpeed: "⚡ 24h Express Dispatch",
-      bannerGrad: "from-slate-900 via-indigo-950 to-slate-900",
-      avatarGrad: "from-indigo-600 to-purple-600",
-      perk: "🔥 Free Express Shipping on orders over $50",
-    },
-    "chrono-style": {
-      name: "Srivalli's Store",
-      tagline: "Handcrafted Luxury Timepieces & Horology",
-      icon: "⌚",
-      rating: 4.8,
-      reviews: 215,
-      followers: "8.9k",
-      shippingSpeed: "🛡️ Insured Free Shipping",
-      bannerGrad: "from-slate-900 via-amber-950 to-slate-900",
-      avatarGrad: "from-amber-600 to-orange-600",
-      perk: "✨ Complimentary Genuine Leather Strap with any watch",
-    },
-    "techgear-co": {
-      name: "TechGear Co.",
-      tagline: "Tactile Mechanical Keyboards & Action Tech",
-      icon: "💻",
-      rating: 4.9,
-      reviews: 480,
-      followers: "19.8k",
-      shippingSpeed: "⚡ Same Day Dispatch",
-      bannerGrad: "from-slate-900 via-cyan-950 to-slate-900",
-      avatarGrad: "from-cyan-600 to-blue-600",
-      perk: "🎁 Bundle & Save 15% on RGB Accessories",
-    },
-    "urban-trends": {
-      name: "Urban Trends",
-      tagline: "Modern Streetwear, Heavy Cotton & Denim",
-      icon: "👕",
-      rating: 4.7,
-      reviews: 189,
-      followers: "15.2k",
-      shippingSpeed: "📦 Standard 2-Day Delivery",
-      bannerGrad: "from-slate-900 via-emerald-950 to-slate-900",
-      avatarGrad: "from-emerald-600 to-teal-600",
-      perk: "👕 Buy 2 Get 1 Free on all Oversized Tees",
-    },
-    "apex-athletics": {
-      name: "Apex Athletics",
-      tagline: "Performance Activewear & Smart Footwear",
-      icon: "👟",
-      rating: 4.8,
-      reviews: 310,
-      followers: "14.1k",
-      shippingSpeed: "⚡ 24h Express Dispatch",
-      bannerGrad: "from-slate-900 via-rose-950 to-slate-900",
-      avatarGrad: "from-rose-600 to-red-600",
-      perk: "👟 Free Gym Duffel Bag on orders over $100",
-    },
-    "smart-home-hub": {
-      name: "Smart Home Hub",
-      tagline: "Connected Appliances & Artisan Coffee Tech",
-      icon: "🏠",
-      rating: 4.7,
-      reviews: 165,
-      followers: "6.5k",
-      shippingSpeed: "🛡️ 2-Year Official Warranty",
-      bannerGrad: "from-slate-900 via-violet-950 to-slate-900",
-      avatarGrad: "from-violet-600 to-purple-600",
-      perk: "☕ 15% OFF Barista Kits with code ESPRESSO15",
-    },
-    "velvet-beauty": {
-      name: "Velvet Beauty",
-      tagline: "Botanical Clean Skincare & Cruelty-Free Glow",
-      icon: "💄",
-      rating: 4.9,
-      reviews: 275,
-      followers: "22.3k",
-      shippingSpeed: "🌿 Free Samples with Every Order",
-      bannerGrad: "from-slate-900 via-pink-950 to-slate-900",
-      avatarGrad: "from-pink-600 to-rose-500",
-      perk: "✨ 20% OFF Radiance Night Serums this week",
     },
   };
 
-  const storeMeta = storeInfoMap[tenantSlug] || {
-    name: tenantSlug ? tenantSlug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()) : "Official Store",
-    tagline: "Verified Multi-Tenant Partner Storefront",
+  const currentStore = storeInfoMap[tenantSlug] || {
+    name: "Partner Store",
+    tagline: "Verified MultiTenant Brand Storefront",
     icon: "🏪",
     rating: 4.8,
-    reviews: 120,
+    reviews: 150,
     followers: "5.0k",
-    shippingSpeed: "⚡ Express Dispatch",
-    bannerGrad: "from-slate-900 via-indigo-950 to-slate-900",
-    avatarGrad: "from-indigo-600 to-purple-600",
-    perk: "🎉 Verified Authentic Products & Buyer Protection",
+    shippingSpeed: "⚡ 24h Express Dispatch",
+    bannerGrad: "from-[#1a56c4] via-[#2874f0] to-[#1e60db]",
+    avatarGrad: "from-blue-600 to-indigo-700",
+    perk: "⚡ 100% Genuine Certified Storefront",
   };
 
   useEffect(() => {
-    fetchTenantProducts();
+    const fetchStoreProducts = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get(`/products?store=${tenantSlug}`);
+        const data = res.data?.products || (Array.isArray(res.data) ? res.data : []);
+
+        if (data.length > 0) {
+          setProducts(data);
+        } else {
+          // Fallback based on store
+          const fallbackStoreProducts = [
+            {
+              _id: `prod_${tenantSlug}_1`,
+              name: `${currentStore.name} Flagship Exclusive Edition`,
+              price: 149.99,
+              originalPrice: 229.99,
+              rating: 4.9,
+              reviewCount: 94,
+              image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
+              vendorName: currentStore.name,
+              description: "Official store edition manufactured with Grade-A materials and guaranteed quality.",
+            },
+            {
+              _id: `prod_${tenantSlug}_2`,
+              name: `${currentStore.name} Performance Pro Series`,
+              price: 89.00,
+              originalPrice: 139.00,
+              rating: 4.8,
+              reviewCount: 68,
+              image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=600&auto=format&fit=crop&q=80",
+              vendorName: currentStore.name,
+              description: "High durability and ergonomic design for daily use.",
+            },
+            {
+              _id: `prod_${tenantSlug}_3`,
+              name: `${currentStore.name} Essentials Daily Pack`,
+              price: 45.00,
+              originalPrice: 70.00,
+              rating: 4.9,
+              reviewCount: 112,
+              image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&auto=format&fit=crop&q=80",
+              vendorName: currentStore.name,
+              description: "Top rated customer choice with fast express dispatch.",
+            },
+          ];
+          setProducts(fallbackStoreProducts);
+        }
+      } catch (err) {
+        setProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStoreProducts();
   }, [tenantSlug]);
 
-  const fetchTenantProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await api.get(`/products?vendorId=${encodeURIComponent(tenantSlug)}`);
-      if (res.data && res.data.products && res.data.products.length > 0) {
-        setProducts(res.data.products);
-      } else {
-        // Fallback demo products for rich display
-        const allRes = await api.get("/products");
-        if (allRes.data && allRes.data.products) {
-          const matched = allRes.data.products.filter(
-            (p) =>
-              p.vendorName?.toLowerCase().includes(tenantSlug.toLowerCase()) ||
-              tenantSlug.toLowerCase().includes(p.vendorName?.toLowerCase() || "")
-          );
-          setProducts(matched.length > 0 ? matched : allRes.data.products.slice(0, 4));
-        }
-      }
-    } catch (err) {
-      console.error("Tenant store load error:", err);
-    } finally {
-      setLoading(false);
-    }
+  const handleAddToCart = (product, e) => {
+    if (e) e.preventDefault();
+    addToCart(product, 1);
+    setToastMessage(`Added "${product.name}" to your Cart! 🛒`);
+    setTimeout(() => setToastMessage(""), 3000);
   };
 
-  const handleAddToCart = (e, product) => {
-    e.stopPropagation();
-    addToCart(product, 1);
-    setToastMessage(`Added "${product.name}" to cart!`);
+  const handleFollowToggle = () => {
+    setIsFollowing(!isFollowing);
+    setToastMessage(isFollowing ? "Unfollowed store" : `Now following ${currentStore.name} ⭐`);
     setTimeout(() => setToastMessage(""), 2500);
   };
 
-  const categories = ["All", ...new Set(products.map((p) => p.category).filter(Boolean))];
-
-  const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
-    const matchesSearch =
-      !searchQuery ||
-      product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+  const filteredProducts = products.filter((p) => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = !q || p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q);
+    return matchesSearch;
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f1f3f6] text-slate-800 flex flex-col font-sans selection:bg-[#2874f0] selection:text-white pb-16">
       <Navbar />
 
-      {/* Toast Notification */}
+      {/* Toast */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold border border-slate-700 flex items-center gap-2.5 animate-slide-up">
+        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold animate-slide-down border border-slate-700">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           {toastMessage}
         </div>
       )}
 
-      {/* HERO STOREFRONT BANNER */}
-      <section className={`relative bg-gradient-to-r ${storeMeta.bannerGrad} text-white pt-10 pb-8 px-4 sm:px-6 lg:px-8 border-b border-slate-800 overflow-hidden`}>
-        <div className="absolute -top-20 -right-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="max-w-7xl mx-auto relative z-10">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 flex-1 w-full space-y-4">
+        
+        {/* Breadcrumbs */}
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+          <Link to="/" className="hover:text-[#2874f0]">Marketplace</Link>
+          <span>›</span>
+          <span className="text-slate-800 font-black">{currentStore.name} Storefront</span>
+        </div>
+
+        {/* Storefront Header Card */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
           
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-xs text-indigo-300 font-bold mb-4">
-            <Link to="/" className="hover:text-white transition">Marketplace</Link>
-            <span>/</span>
-            <span>Verified Stores</span>
-            <span>/</span>
-            <span className="text-white">{storeMeta.name}</span>
+          {/* Header Banner */}
+          <div className={`h-28 sm:h-36 bg-gradient-to-r ${currentStore.bannerGrad} p-4 sm:p-6 flex items-start justify-between text-white relative`}>
+            <span className="px-2.5 py-0.5 rounded-full bg-black/30 backdrop-blur-xs text-[10px] font-black uppercase tracking-wider">
+              🏬 Official Storefront
+            </span>
+            <span className="px-2.5 py-0.5 rounded-md bg-[#388e3c] text-white text-xs font-black shadow-xs">
+              ★ {currentStore.rating} Rated
+            </span>
           </div>
 
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-            <div className="flex items-start sm:items-center gap-4">
-              {/* Brand Avatar */}
-              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br ${storeMeta.avatarGrad} p-1 shadow-2xl ring-4 ring-white/10 shrink-0`}>
-                <div className="w-full h-full bg-slate-900 rounded-[20px] flex items-center justify-center text-3xl sm:text-4xl shadow-inner">
-                  {storeMeta.icon}
+          {/* Store Info Bar */}
+          <div className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-10 sm:-mt-12 relative z-10">
+            <div className="flex items-end gap-3.5">
+              <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr ${currentStore.avatarGrad} p-1 shadow-lg ring-4 ring-white shrink-0`}>
+                <div className="w-full h-full bg-slate-900 rounded-[14px] flex items-center justify-center text-3xl text-white">
+                  {currentStore.icon}
                 </div>
               </div>
-
-              {/* Brand Meta */}
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                    {storeMeta.name}
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+                    {currentStore.name}
                   </h1>
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                    ✓ Verified Merchant
+                  <span className="text-[#2874f0] font-black bg-blue-50 px-2 py-0.5 rounded text-[10px]">
+                    ⚡ Verified
                   </span>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xl">
-                  {storeMeta.tagline}
+                <p className="text-xs text-slate-500 max-w-lg">
+                  {currentStore.tagline}
                 </p>
-                <div className="flex items-center gap-3 pt-1 text-xs text-slate-300 flex-wrap">
-                  <span className="flex items-center gap-1 text-amber-300 font-bold">
-                    <span>★</span> {storeMeta.rating} <span className="text-slate-400 font-normal">({storeMeta.reviews} Reviews)</span>
-                  </span>
+                <div className="flex items-center gap-3 text-[11px] text-slate-400 font-bold pt-1">
+                  <span>👥 {currentStore.followers} Followers</span>
                   <span>•</span>
-                  <span className="text-indigo-300 font-semibold">{storeMeta.shippingSpeed}</span>
+                  <span>⭐ {currentStore.reviews} Reviews</span>
                   <span>•</span>
-                  <span className="text-slate-400">{storeMeta.followers} Followers</span>
+                  <span className="text-emerald-700">{currentStore.shippingSpeed}</span>
                 </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => {
-                  setIsFollowing(!isFollowing);
-                  setToastMessage(isFollowing ? "Unfollowed store" : "Following store updates!");
-                }}
-                className={`flex-1 md:flex-none px-5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center justify-center gap-2 ${
+                type="button"
+                onClick={handleFollowToggle}
+                className={`px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer shadow-xs ${
                   isFollowing
-                    ? "bg-slate-800 border border-slate-700 text-white hover:bg-slate-700"
-                    : "bg-white text-slate-900 hover:bg-indigo-50 shadow-lg hover:scale-105"
+                    ? "bg-slate-100 text-slate-700 border border-slate-300"
+                    : "bg-[#2874f0] hover:bg-[#1e60db] text-white"
                 }`}
               >
-                <span>{isFollowing ? "✓ Following" : "+ Follow Store"}</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  navigator.clipboard?.writeText?.(window.location.href);
-                  setToastMessage("Store link copied!");
-                }}
-                className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-2xl border border-slate-700 transition flex items-center gap-1.5"
-              >
-                <span>🔗</span> Share
+                {isFollowing ? "✓ Following" : "+ Follow Store"}
               </button>
             </div>
           </div>
 
-          {/* Exclusive Store Perk Banner */}
-          <div className="mt-6 p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-between gap-3 text-xs">
-            <span className="font-bold text-amber-300 flex items-center gap-2">
-              {storeMeta.perk}
-            </span>
-            <span className="text-[10px] text-slate-300 font-semibold uppercase tracking-wider hidden sm:inline">
-              Applied automatically at checkout
-            </span>
+          {/* Store Promo Ribbon */}
+          <div className="bg-amber-50 border-t border-amber-200 px-4 py-2 text-xs font-bold text-amber-900 flex items-center gap-2">
+            <span>🎉</span>
+            <span>{currentStore.perk}</span>
           </div>
         </div>
-      </section>
 
-      {/* Catalog Search & Category Filters */}
-      <section className="bg-white border-b border-slate-200 py-4 px-4 sm:px-6 lg:px-8 sticky top-0 z-20 shadow-xs">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-none">
-            <span className="text-xs font-black text-slate-400 uppercase tracking-wider mr-1">
-              Filter:
-            </span>
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition ${
-                  selectedCategory === cat
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-100"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+        {/* Store Catalog Search & Products Grid */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <h2 className="text-base font-black text-slate-900">
+                Products by {currentStore.name} ({filteredProducts.length})
+              </h2>
+              <p className="text-xs text-slate-500">100% direct authentic merchant stock.</p>
+            </div>
+
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder={`Search in ${currentStore.name}...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 text-xs rounded-lg focus:outline-none focus:ring-1 focus:ring-[#2874f0]"
+              />
+              <span className="absolute left-2.5 top-1.5 text-slate-400 text-xs">🔍</span>
+            </div>
           </div>
 
-          <div className="relative w-full md:w-72">
-            <input
-              type="text"
-              placeholder={`Search within ${storeMeta.name}...`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium focus:outline-none focus:border-indigo-600 transition"
-            />
-            <span className="absolute left-3 top-2 text-slate-400 text-sm">🔍</span>
-          </div>
-        </div>
-      </section>
+          {/* Products Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredProducts.map((p) => {
+              const orig = p.originalPrice || (p.price * 1.4).toFixed(2);
+              const disc = Math.round(((orig - p.price) / orig) * 100);
 
-      {/* Catalog Grid */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <div className="w-10 h-10 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="text-xs font-bold text-slate-500">Loading storefront catalog...</span>
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200 shadow-sm p-8 max-w-md mx-auto">
-            <div className="text-4xl mb-3">🛍️</div>
-            <h3 className="font-black text-slate-900 text-base mb-1">No products found</h3>
-            <p className="text-slate-500 text-xs mb-5">
-              Try adjusting your search query or department filter.
-            </p>
-            <button
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategory("All");
-              }}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition"
-            >
-              Reset Filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <div
-                key={product._id}
-                className="bg-white border border-slate-200 rounded-3xl overflow-hidden flex flex-col hover:border-indigo-300 hover:shadow-xl transition-all duration-300 group"
-              >
-                <div className="relative aspect-4/3 bg-slate-100 overflow-hidden">
-                  <img
-                    src={getProductImage(product)}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => handleImageError(e, product.category, product.name)}
-                  />
-                  <span className="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-xl">
-                    {product.category}
-                  </span>
+              return (
+                <div
+                  key={p._id}
+                  className="bg-white rounded-xl border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200 p-3.5 flex flex-col justify-between group"
+                >
+                  <Link to={`/product/${p._id}`} className="block aspect-square rounded-lg bg-slate-50 p-2 mb-3 overflow-hidden">
+                    <img
+                      src={getProductImage(p)}
+                      alt={p.name}
+                      onError={(e) => handleImageError(e, p.name)}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </Link>
 
-                  {product.stock <= 5 && product.stock > 0 && (
-                    <span className="absolute top-3 right-3 bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-lg shadow-sm">
-                      Only {product.stock} left
-                    </span>
-                  )}
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500 mb-1">
-                      <span>★</span>
-                      <span>{product.rating || "4.8"}</span>
-                      <span className="text-slate-400 font-normal">({product.salesCount || 18}+ sold)</span>
-                    </div>
-
-                    <Link
-                      to={`/product/${product._id}`}
-                      className="text-sm font-bold text-slate-900 hover:text-indigo-600 transition-colors line-clamp-1 block"
-                    >
-                      {product.name}
-                    </Link>
-                    <p className="text-slate-500 text-xs line-clamp-2 mt-1 leading-relaxed">
-                      {product.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 block uppercase">Price</span>
-                      <span className="text-lg font-black text-slate-900">
-                        ${Number(product.price).toFixed(2)}
+                  <div className="space-y-1.5 mb-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="bg-[#388e3c] text-white text-[10px] font-black px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                        <span>{p.rating || "4.8"}</span>
+                        <span>★</span>
+                      </span>
+                      <span className="text-[10px] font-bold text-[#2874f0] bg-blue-50 px-1.5 py-0.2 rounded ml-auto">
+                        ⚡ Assured
                       </span>
                     </div>
 
-                    <button
-                      onClick={(e) => handleAddToCart(e, product)}
-                      disabled={product.stock <= 0}
-                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition shadow-md shadow-indigo-100 active:scale-95 flex items-center gap-1.5"
-                    >
-                      <span>🛒</span> {product.stock <= 0 ? "Out of Stock" : "Add to Cart"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                    <Link to={`/product/${p._id}`}>
+                      <h4 className="text-xs font-bold text-slate-900 line-clamp-2 group-hover:text-[#2874f0] transition">
+                        {p.name}
+                      </h4>
+                    </Link>
 
-        {/* Store Customer Reviews Section */}
-        <div className="mt-12">
-          <CustomerReviewsSection
-            targetId={`store_${tenantSlug}`}
-            targetTitle={storeMeta.name}
-          />
+                    <div className="flex items-baseline gap-2 pt-1">
+                      <span className="text-base font-black text-slate-900">
+                        ${Number(p.price).toFixed(2)}
+                      </span>
+                      <span className="text-xs text-slate-400 line-through">
+                        ${Number(orig).toFixed(2)}
+                      </span>
+                      <span className="text-xs font-black text-[#388e3c]">
+                        {disc}% off
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => handleAddToCart(p, e)}
+                    className="w-full py-2 bg-[#ff9f00] hover:bg-[#f59400] text-slate-950 font-black text-xs rounded-lg shadow-xs transition cursor-pointer"
+                  >
+                    🛒 Add to Cart
+                  </button>
+                </div>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Store Reviews Section */}
+        <section className="pt-2">
+          <CustomerReviewsSection
+            targetId={tenantSlug}
+            targetTitle={`${currentStore.name} Storefront`}
+          />
+        </section>
+
       </main>
     </div>
   );

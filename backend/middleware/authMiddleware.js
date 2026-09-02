@@ -22,7 +22,6 @@ export const protect = (req, res, next) => {
       req.user = decoded;
       return next();
     } catch (error) {
-      // Return clean 401 without unhandled crashing
       return res.status(401).json({
         success: false,
         message: "Not authorized, token invalid or expired",
@@ -34,6 +33,26 @@ export const protect = (req, res, next) => {
     success: false,
     message: "Not authorized, no authentication token provided",
   });
+};
+
+// Optional auth - populates req.user if token is present, continues anyway if not
+export const optionalAuth = (req, res, next) => {
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
+    try {
+      token = req.headers.authorization.split(" ")[1];
+      if (token && token !== "null" && token !== "undefined") {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        req.user = decoded;
+      }
+    } catch (err) {
+      // ignore invalid token for optional auth
+    }
+  }
+  next();
 };
 
 export const isVendor = (req, res, next) => {
