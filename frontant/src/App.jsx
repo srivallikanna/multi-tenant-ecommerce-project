@@ -20,6 +20,7 @@ const router = createBrowserRouter([
   { path: "/signup", element: <Signup /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
   { path: "/reset-password", element: <ResetPassword /> },
+  { path: "/reset-password/:token", element: <ResetPassword /> },
   { path: "/product/:id", element: <ProductDetails /> },
   { path: "/cart", element: <Cart /> },
   { path: "/checkout", element: <Checkout /> },

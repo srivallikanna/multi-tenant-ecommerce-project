@@ -5,4 +5,4 @@ const api = axios.create({
 });
 
 export const API = api;
-export default api;
+export default api;

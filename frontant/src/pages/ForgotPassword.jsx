@@ -10,6 +10,8 @@ export default function ForgotPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email) return;
+
     setLoading(true);
     setMessage("");
     setErrorMsg("");
@@ -26,7 +28,6 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen bg-[#f1f3f6] text-slate-800 flex flex-col justify-between font-sans selection:bg-[#2874f0] selection:text-white">
-      
       {/* Top Header */}
       <header className="bg-gradient-to-r from-[#1a56c4] via-[#2874f0] to-[#1e60db] text-white py-3.5 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
@@ -46,7 +47,6 @@ export default function ForgotPassword() {
 
       {/* Main Center Card */}
       <main className="max-w-md w-full mx-auto px-4 py-12 flex-1 flex flex-col justify-center space-y-5">
-        
         <div className="text-center space-y-1">
           <span className="text-[10px] font-black uppercase tracking-wider text-[#2874f0] bg-blue-50 px-2.5 py-0.5 rounded-md">
             Password Recovery
@@ -60,7 +60,6 @@ export default function ForgotPassword() {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-4">
-          
           {message && (
             <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2">
               <span>✓</span>
@@ -108,13 +107,11 @@ export default function ForgotPassword() {
             </Link>
           </div>
         </div>
-
       </main>
 
       <footer className="py-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white">
         © 2026 MultiTenant E-Commerce Platform. All rights reserved.
       </footer>
-
     </div>
   );
 }

@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
 import api from "../api/axios";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { loginUserSuccess } = useCart();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -17,6 +15,12 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  const loginUserSuccess = (user, token) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("userRole", user.role || "customer");
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -67,7 +71,6 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-[#f1f3f6] text-slate-800 flex flex-col font-sans selection:bg-[#2874f0] selection:text-white">
-      
       {/* Top Header */}
       <header className="bg-gradient-to-r from-[#1a56c4] via-[#2874f0] to-[#1e60db] text-white py-3.5 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
@@ -88,7 +91,6 @@ export default function Signup() {
       {/* Main Flipkart 2-Panel Signup Card */}
       <main className="max-w-3xl w-full mx-auto px-4 py-10 flex-1 flex items-center justify-center">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-12 w-full">
-          
           {/* LEFT BLUE PANEL */}
           <div className="md:col-span-5 bg-gradient-to-b from-[#1a56c4] via-[#2874f0] to-[#1e60db] p-8 text-white flex flex-col justify-between relative">
             <div className="space-y-3">
@@ -193,7 +195,6 @@ export default function Signup() {
               </Link>
             </div>
           </div>
-
         </div>
       </main>
     </div>

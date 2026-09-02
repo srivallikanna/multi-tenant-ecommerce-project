@@ -1,9 +1,14 @@
 import React, { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 
 export default function ResetPassword() {
-  const { token } = useParams();
+  const { token: paramToken } = useParams();
+  const [searchParams] = useSearchParams();
+  const queryToken = searchParams.get("token");
+  const queryEmail = searchParams.get("email");
+  const token = paramToken || queryToken || "token";
+
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");
@@ -29,8 +34,10 @@ export default function ResetPassword() {
 
     try {
       setLoading(true);
-      await api.post(`/auth/reset-password/${token || "token"}`, {
+      await api.post(`/auth/reset-password/${token}`, {
         password,
+        email: queryEmail || undefined,
+        token,
       });
 
       setSuccessMsg("Password updated successfully! Redirecting to login...");
@@ -49,7 +56,6 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen bg-[#f1f3f6] text-slate-800 flex flex-col justify-between font-sans selection:bg-[#2874f0] selection:text-white">
-      
       {/* Top Header */}
       <header className="bg-gradient-to-r from-[#1a56c4] via-[#2874f0] to-[#1e60db] text-white py-3.5 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
@@ -69,7 +75,6 @@ export default function ResetPassword() {
 
       {/* Main Center Card */}
       <main className="max-w-md w-full mx-auto px-4 py-12 flex-1 flex flex-col justify-center space-y-5">
-        
         <div className="text-center space-y-1">
           <span className="text-[10px] font-black uppercase tracking-wider text-[#2874f0] bg-blue-50 px-2.5 py-0.5 rounded-md">
             Security Update
@@ -83,7 +88,6 @@ export default function ResetPassword() {
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-4">
-          
           {errorMsg && (
             <div className="bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-2.5 rounded-xl text-xs font-bold">
               ⚠️ {errorMsg}
@@ -137,13 +141,11 @@ export default function ResetPassword() {
             </button>
           </form>
         </div>
-
       </main>
 
       <footer className="py-4 text-center text-xs text-slate-500 border-t border-slate-200 bg-white">
         © 2026 MultiTenant E-Commerce Platform. All rights reserved.
       </footer>
-
     </div>
   );
 }

@@ -38,16 +38,23 @@ export default function BigDealsSection({ products = [], onAddToCart }) {
 
   // Process catalog items into deals with realistic discounts
   const dealsList = products.map((product, index) => {
-    const discountPercent = product.originalPrice 
-      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    const rawPrice = Number(product.price) || 0;
+    const rawOriginalPrice = Number(product.originalPrice) || 0;
+
+    const discountPercent = rawOriginalPrice > rawPrice
+      ? Math.round(((rawOriginalPrice - rawPrice) / rawOriginalPrice) * 100)
       : [45, 50, 35, 60, 40, 30][index % 6];
 
-    const originalPrice = product.originalPrice || (product.price * (1 + discountPercent / 100)).toFixed(2);
+    const originalPrice = rawOriginalPrice > 0 
+      ? rawOriginalPrice 
+      : (rawPrice * (1 + discountPercent / 100));
+
     const claimedPercent = [88, 76, 92, 64, 83, 95][index % 6];
     const itemsLeft = [2, 5, 3, 7, 4, 1][index % 6];
 
     return {
       ...product,
+      price: rawPrice,
       discountPercent,
       originalPrice,
       claimedPercent,
@@ -171,10 +178,10 @@ export default function BigDealsSection({ products = [], onAddToCart }) {
               {/* Price & Rating */}
               <div className="flex items-baseline gap-2">
                 <span className="text-base font-black text-slate-900">
-                  ${Number(deal.price).toFixed(2)}
+                  ${(Number(deal.price) || 0).toFixed(2)}
                 </span>
                 <span className="text-xs text-slate-400 line-through">
-                  ${Number(deal.originalPrice).toFixed(2)}
+                  ${(Number(deal.originalPrice) || Number(deal.price) || 0).toFixed(2)}
                 </span>
               </div>
 

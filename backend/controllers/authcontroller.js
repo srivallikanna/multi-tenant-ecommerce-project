@@ -257,10 +257,42 @@ export const forgotPassword = async (req, res) => {
 // =========================
 export const resetPassword = async (req, res) => {
   try {
-    const { password } = req.body;
+    const { password, email } = req.body;
+    const token = req.params.token || req.query.token || req.body.token;
+
     if (!password) {
       return res.status(400).json({ success: false, message: "New password is required" });
     }
+
+    // If MongoDB is connected, update database user
+    if (mongoose.connection.readyState === 1) {
+      let user = null;
+      if (email) {
+        user = await User.findOne({ email: email.toLowerCase().trim() });
+      } else if (token && token !== "token") {
+        user = await User.findOne({ resetPasswordToken: token });
+      }
+
+      if (user) {
+        user.password = await bcrypt.hash(password, 10);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpire = undefined;
+        await user.save();
+      }
+    }
+
+    // Also update in-memory accounts if applicable
+    if (email) {
+      const normalizedEmail = email.toLowerCase().trim();
+      const memUser = inMemoryUsers.find(
+        (u) => u.email === normalizedEmail || u.aliases?.includes(normalizedEmail)
+      );
+      if (memUser) {
+        if (!memUser.passwords) memUser.passwords = [];
+        memUser.passwords.unshift(password);
+      }
+    }
+
     return res.status(200).json({
       success: true,
       message: "Password updated successfully! You can now log in.",

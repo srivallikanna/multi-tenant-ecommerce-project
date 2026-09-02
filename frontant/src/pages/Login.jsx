@@ -1,11 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useCart } from "../context/CartContext";
 import api from "../api/axios";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { loginUserSuccess } = useCart();
 
   const [formData, setFormData] = useState({
     email: "customer@test.com",
@@ -15,6 +13,12 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+
+  const loginUserSuccess = (user, token) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("userRole", user.role || "customer");
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -98,7 +102,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[#f1f3f6] text-slate-800 flex flex-col font-sans selection:bg-[#2874f0] selection:text-white">
-      
       {/* Top Header */}
       <header className="bg-gradient-to-r from-[#1a56c4] via-[#2874f0] to-[#1e60db] text-white py-3.5 shadow-sm">
         <div className="max-w-6xl mx-auto px-4 flex items-center justify-between">
@@ -119,7 +122,6 @@ export default function Login() {
       {/* Main Flipkart 2-Panel Auth Card */}
       <main className="max-w-3xl w-full mx-auto px-4 py-10 flex-1 flex items-center justify-center">
         <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-12 w-full">
-          
           {/* LEFT FLIPKART BLUE BRAND PANEL (5 COLS) */}
           <div className="md:col-span-5 bg-gradient-to-b from-[#1a56c4] via-[#2874f0] to-[#1e60db] p-8 text-white flex flex-col justify-between relative overflow-hidden">
             <div className="space-y-3 relative z-10">
@@ -144,7 +146,6 @@ export default function Login() {
           {/* RIGHT AUTH FORM PANEL (7 COLS) */}
           <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <form onSubmit={handleLoginSubmit} className="space-y-4">
-              
               {errorMsg && (
                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold rounded-lg">
                   {errorMsg}
@@ -244,7 +245,6 @@ export default function Login() {
                 New to MultiTenant? Create an account
               </Link>
             </div>
-
           </div>
         </div>
       </main>
