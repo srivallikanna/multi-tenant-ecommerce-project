@@ -181,7 +181,7 @@ export default function Checkout() {
                 Order Confirmed & Payment Verified
               </span>
               <h1 className="text-2xl font-black text-slate-900 pt-2">
-                Thank You, {selectedAddress?.fullName || 'Customer'}!
+                Thank You, {JSON.parse(localStorage.getItem('user') || '{}').name || selectedAddress?.fullName || 'Customer'}!
               </h1>
               <p className="text-xs text-slate-500 max-w-md mx-auto">
                 Your order has been placed successfully. A confirmation message and tracking details have been generated.
@@ -205,7 +205,7 @@ export default function Checkout() {
               <div className="flex justify-between border-b border-slate-200 pb-2">
                 <span className="text-slate-500">Delivery Address:</span>
                 <span className="text-slate-800 font-bold text-right truncate max-w-[280px]">
-                  {orderPlaced.shippingAddress}
+                  {orderPlaced?.customerName || JSON.parse(localStorage.getItem('user') || '{}').name || 'Customer'}, {orderPlaced.shippingAddress}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -404,7 +404,7 @@ export default function Checkout() {
                 )}
               </div>
 
-              {/* STEP 3: PAYMENT OPTIONS */}
+            {/* STEP 3: PAYMENT OPTIONS */}
               <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
                 <div
                   onClick={() => setActiveStep(3)}
@@ -433,117 +433,57 @@ export default function Checkout() {
 
                 {activeStep === 3 && (
                   <div className="p-4 sm:p-5 space-y-4">
+                    {/* Gaurav's Full UI Component */}
                     <PaymentSection
                       totalAmount={grandTotal}
                       orderId={orderId}
                       onPaymentReady={({ isValid, paymentData }) => {
                         setIsPaymentReady(isValid);
-                        setPaymentData({ isValid, paymentData });
+                        setPaymentData({ paymentData });
                       }}
                     />
 
-                    <div className="pt-4 border-t border-slate-100">
-                      <button
-                        type="button"
-                        onClick={handleConfirmAndPay}
-                        disabled={submitting || !isPaymentReady}
-                        className={`w-full py-4 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-md transition flex items-center justify-center gap-2 cursor-pointer ${
-                          isPaymentReady && !submitting
-                            ? 'bg-[#fb641b] hover:bg-[#eb5a14] active:scale-95'
-                            : 'bg-slate-300 cursor-not-allowed text-slate-500'
-                        }`}
-                      >
-                        <span>🔒</span>
-                        <span>
-                          {submitting
-                            ? 'CONFIRMING ORDER...'
-                            : `CONFIRM & PAY ₹${grandTotal.toFixed(2)}`}
-                        </span>
-                      </button>
-                    </div>
+                    {/* Aapka Backend Submit Button */}
+                    <button
+                      type="button"
+                      disabled={submitting}
+                      onClick={handleConfirmAndPay}
+                      className="w-full py-3.5 bg-[#fb641b] hover:bg-[#eb5a14] active:scale-95 text-white font-black text-sm uppercase tracking-wider rounded-xl shadow-md transition cursor-pointer"
+                    >
+                      {submitting ? 'Placing Order...' : `CONFIRM & PAY ₹${grandTotal.toFixed(2)}`}
+                    </button>
                   </div>
                 )}
               </div>
 
             </div>
 
-            {/* ================= RIGHT: PRICE SUMMARY (4 COLS) ================= */}
-            <div className="lg:col-span-4 space-y-4">
-              <div className="sticky top-24 space-y-4">
-                
-                {/* Price Details Card */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-                  <h3 className="text-xs font-black uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-3">
-                    PRICE DETAILS
-                  </h3>
-
-                  <div className="space-y-3 text-xs font-semibold text-slate-700">
-                    <div className="flex justify-between">
-                      <span>Price ({checkoutItems.reduce((sum, it) => sum + (it.quantity || 1), 0)} items)</span>
-                      <span>₹{mrpTotal.toFixed(2)}</span>
-                    </div>
-
-                    <div className="flex justify-between text-[#388e3c]">
-                      <span>Discount on MRP</span>
-                      <span>-₹{productDiscount.toFixed(2)}</span>
-                    </div>
-
-                    {couponDiscount > 0 && (
-                      <div className="flex justify-between text-emerald-700 font-bold bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
-                        <span>Coupon Discount ({appliedCoupon?.code})</span>
-                        <span>-₹{couponDiscount.toFixed(2)}</span>
-                      </div>
-                    )}
-
-                    <div className="flex justify-between">
-                      <span>Delivery Charges</span>
-                      {finalShipping === 0 ? (
-                        <span className="text-[#388e3c] font-black">
-                          <span className="line-through text-slate-400 text-[11px] mr-1">₹40</span>
-                          FREE
-                        </span>
-                      ) : (
-                        <span>₹{finalShipping.toFixed(2)}</span>
-                      )}
-                    </div>
-
-                    <div className="flex justify-between">
-                      <span>Platform / Packaging Fee</span>
-                      <span>₹{platformFee.toFixed(2)}</span>
-                    </div>
-
-                    <div className="border-t border-dashed border-slate-200 pt-3 flex justify-between text-base font-black text-slate-900">
-                      <span>Total Amount</span>
-                      <span>₹{grandTotal.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  {totalSavings > 0 && (
-                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 font-bold text-center">
-                      🎉 You will save ₹{totalSavings.toFixed(2)} on this order!
-                    </div>
-                  )}
-
-                  {selectedAddress && (
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                        Delivering To:
-                      </span>
-                      <div className="font-bold text-slate-900 truncate">
-                        {selectedAddress.fullName} (+91 {selectedAddress.mobile})
-                      </div>
-                      <p className="text-[11px] text-slate-600 line-clamp-2">
-                        {selectedAddress.address}, {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="p-3 bg-blue-50/50 border border-blue-200 rounded-xl text-[11px] text-[#2874f0] font-bold flex items-center gap-2">
-                    <span>🛡️</span>
-                    <span>100% Buyer Protection & Easy Returns Guaranteed</span>
-                  </div>
+            {/* RIGHT COLUMN: PRICE DETAILS */}
+            <div className="lg:col-span-4">
+              <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-3 sticky top-20">
+                <h3 className="text-xs font-black uppercase text-slate-500 tracking-wider border-b border-slate-100 pb-2">
+                  Price Details
+                </h3>
+                <div className="flex justify-between text-xs">
+                  <span>Price ({checkoutItems.length} items)</span>
+                  <span>₹{rawSubtotal.toFixed(2)}</span>
                 </div>
-
+                <div className="flex justify-between text-xs">
+                  <span>Delivery Charges</span>
+                  <span className={finalShipping === 0 ? 'text-emerald-600 font-bold' : ''}>
+                    {finalShipping === 0 ? 'FREE' : `₹${finalShipping}`}
+                  </span>
+                </div>
+                {couponDiscount > 0 && (
+                  <div className="flex justify-between text-xs text-emerald-600 font-bold">
+                    <span>Coupon Discount</span>
+                    <span>-₹{couponDiscount.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="border-t border-slate-200 pt-2 flex justify-between font-black text-sm text-slate-900">
+                  <span>Total Payable</span>
+                  <span className="text-[#2874f0]">₹{grandTotal.toFixed(2)}</span>
+                </div>
               </div>
             </div>
 
