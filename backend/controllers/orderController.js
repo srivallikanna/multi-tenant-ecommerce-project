@@ -23,7 +23,14 @@ export const createOrder = async (req, res) => {
       customerEmail,
     } = req.body;
 
-    const customerId = req.user?.id || req.body.customerId || 'cust_' + Date.now();
+    const customerId = req.user?.id || req.body.customerId;
+
+    if (!mongoose.Types.ObjectId.isValid(customerId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Please login with a registered customer account",
+      });
+    }
 
     if (!items || items.length === 0) {
       return res.status(400).json({ success: false, message: "Order items cannot be empty" });

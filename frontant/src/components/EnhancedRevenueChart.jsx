@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "../api/axios";
 
 export default function EnhancedRevenueChart({
   title = "Revenue & Sales Chart",
@@ -6,54 +7,45 @@ export default function EnhancedRevenueChart({
   initialMetric = "revenue", // 'revenue' | 'orders' | 'aov'
   colorScheme = "indigo", // 'indigo' | 'emerald' | 'purple'
 }) {
-  const [timeframe, setTimeframe] = useState("7d"); // '24h' | '7d' | '30d' | '90d' | '1y'
-  const [activeMetric, setActiveMetric] = useState(initialMetric);
-  const [chartType, setChartType] = useState("area"); // 'area' | 'bar'
-  const [hoveredPoint, setHoveredPoint] = useState(null);
+  const [timeframe, setTimeframe] = useState("7d");
+const [activeMetric, setActiveMetric] = useState(initialMetric);
+const [chartType, setChartType] = useState("area");
+const [hoveredPoint, setHoveredPoint] = useState(null);
 
-  // Timeframe Data Sets
-  const datasets = {
-    "24h": [
-      { label: "00:00", revenue: 120, orders: 2, aov: 60 },
-      { label: "04:00", revenue: 80, orders: 1, aov: 80 },
-      { label: "08:00", revenue: 340, orders: 4, aov: 85 },
-      { label: "12:00", revenue: 780, orders: 9, aov: 86.6 },
-      { label: "16:00", revenue: 1150, orders: 13, aov: 88.4 },
-      { label: "20:00", revenue: 920, orders: 10, aov: 92 },
-      { label: "23:59", revenue: 460, orders: 5, aov: 92 },
-    ],
-    "7d": [
-      { label: "Mon", fullDate: "Aug 14, 2026", revenue: 420, orders: 5, aov: 84 },
-      { label: "Tue", fullDate: "Aug 15, 2026", revenue: 680, orders: 8, aov: 85 },
-      { label: "Wed", fullDate: "Aug 16, 2026", revenue: 890, orders: 11, aov: 80.9 },
-      { label: "Thu", fullDate: "Aug 17, 2026", revenue: 540, orders: 6, aov: 90 },
-      { label: "Fri", fullDate: "Aug 18, 2026", revenue: 1120, orders: 14, aov: 80 },
-      { label: "Sat", fullDate: "Aug 19, 2026", revenue: 1250, orders: 16, aov: 78.1 },
-      { label: "Sun", fullDate: "Aug 20, 2026", revenue: 790, orders: 9, aov: 87.7 },
-    ],
-    "30d": [
-      { label: "Week 1", fullDate: "Jul 23 - Jul 29", revenue: 3200, orders: 38, aov: 84.2 },
-      { label: "Week 2", fullDate: "Jul 30 - Aug 05", revenue: 4100, orders: 49, aov: 83.6 },
-      { label: "Week 3", fullDate: "Aug 06 - Aug 12", revenue: 3850, orders: 44, aov: 87.5 },
-      { label: "Week 4", fullDate: "Aug 13 - Aug 20", revenue: 5690, orders: 69, aov: 82.4 },
-    ],
-    "90d": [
-      { label: "Month 1 (Jun)", fullDate: "June 2026", revenue: 14200, orders: 165, aov: 86 },
-      { label: "Month 2 (Jul)", fullDate: "July 2026", revenue: 17800, orders: 210, aov: 84.7 },
-      { label: "Month 3 (Aug)", fullDate: "August 2026", revenue: 21450, orders: 258, aov: 83.1 },
-    ],
-    "1y": [
-      { label: "Q1", fullDate: "Jan - Mar 2026", revenue: 38500, orders: 450, aov: 85.5 },
-      { label: "Q2", fullDate: "Apr - Jun 2026", revenue: 49200, orders: 580, aov: 84.8 },
-      { label: "Q3 (Est)", fullDate: "Jul - Sep 2026", revenue: 64800, orders: 760, aov: 85.2 },
-      { label: "Q4 (Proj)", fullDate: "Oct - Dec 2026", revenue: 78000, orders: 910, aov: 85.7 },
-    ],
+const [chartData, setChartData] = useState([]);
+const [loading, setLoading] = useState(true);
+const [percentageChange, setPercentageChange] = useState(0);
+const [conversionRate, setConversionRate] = useState(0);
+useEffect(() => {
+  const fetchRevenueData = async () => {
+    try {
+      setLoading(true);
+
+      const response = await api.get(
+        `/admin/revenue?timeframe=${timeframe}`
+      );
+
+      if (response.data.success) {
+        setChartData(response.data.data);
+        setPercentageChange(response.data.percentageChange);
+      }
+    } catch (error) {
+      console.error("Revenue analytics error:", error);
+      setChartData([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const currentData = datasets[timeframe] || datasets["7d"];
+  fetchRevenueData();
+}, [timeframe]);
 
+  // Timeframe Data Sets
+  const currentData = chartData;
   // Compute key stats dynamically
-  const values = currentData.map((d) => d[activeMetric]);
+  const values = currentData.length
+  ? currentData.map((d) => d[activeMetric])
+  : [0];
   const maxValue = Math.max(...values, 1);
   const totalVolume = values.reduce((sum, v) => sum + v, 0);
   const avgValue = (totalVolume / values.length).toFixed(1);
@@ -153,7 +145,8 @@ export default function EnhancedRevenueChart({
             </h3>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              +18.4% vs last period
+              {percentageChange >= 0 ? "+" : ""}
+              {percentageChange}% vs last period
             </span>
           </div>
           <p className="text-xs text-slate-500 font-medium mt-0.5">{subtitle}</p>
@@ -262,7 +255,7 @@ export default function EnhancedRevenueChart({
             Conversion Rate
           </span>
           <span className="text-base font-black text-emerald-900 mt-0.5 block">
-            4.2% <span className="text-[10px] font-semibold text-emerald-600">(Healthy)</span>
+            {conversionRate}%<span className="text-[10px] font-semibold text-emerald-600">(Healthy)</span>
           </span>
         </div>
       </div>

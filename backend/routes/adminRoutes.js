@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getPlatformStats,
+  getRevenueAnalytics,
   getAllVendors,
   getVendorDetails,
   updateVendorStatus,
@@ -16,6 +17,7 @@ import { isAdmin } from "../middleware/adminMiddleware.js";
 const router = express.Router();
 
 router.get("/stats", protect, isAdmin, getPlatformStats);
+router.get("/revenue", protect, isAdmin, getRevenueAnalytics);
 router.get("/vendors", protect, isAdmin, getAllVendors);
 router.get("/vendors/:id", protect, isAdmin, getVendorDetails);
 router.put("/vendors/:id/status", protect, isAdmin, updateVendorStatus);

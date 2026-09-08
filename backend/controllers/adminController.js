@@ -107,16 +107,36 @@ const isDbConnected = () => mongoose.connection.readyState === 1;
 export const getPlatformStats = async (req, res) => {
   try {
     let totalVendors = memoryVendors.length;
-    let totalCustomers = 142;
-    let totalProductsCount = 50;
-    let totalGMV = 14850.00;
+let totalCustomers = 0;
+let totalProductsCount = 50;
+let totalGMV = 0;
 
-    if (isDbConnected()) {
-      totalVendors = (await User.countDocuments({ role: "vendor" })) || totalVendors;
-      totalCustomers = (await User.countDocuments({ role: "customer" })) || totalCustomers;
-      totalProductsCount = (await Product.countDocuments()) || totalProductsCount;
-    }
+if (isDbConnected()) {
+  totalVendors =
+    (await User.countDocuments({ role: "vendor" })) || totalVendors;
 
+  totalCustomers =
+    (await User.countDocuments({ role: "customer" })) || totalCustomers;
+
+  totalProductsCount =
+    (await Product.countDocuments()) || totalProductsCount;
+
+  const gmvResult = await Order.aggregate([
+    {
+      $match: {
+        status: { $ne: "Cancelled" },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        total: { $sum: "$totalAmount" },
+      },
+    },
+  ]);
+
+  totalGMV = gmvResult[0]?.total || 0;
+}
     const platformCommissionEarned = (totalGMV * platformSettings.commissionRate) / 100;
     const pendingPayoutsTotal = memoryPayouts
       .filter((p) => p.status === "Pending")
@@ -170,7 +190,117 @@ export const getVendorDetails = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+// Get Revenue Chart Data
+export const getRevenueAnalytics = async (req, res) => {
+  try {
+    const timeframe = req.query.timeframe || "7d";
 
+    const startDate = new Date();
+
+    if (timeframe === "24h") {
+      startDate.setHours(startDate.getHours() - 24);
+    } else if (timeframe === "30d") {
+      startDate.setDate(startDate.getDate() - 30);
+    } else if (timeframe === "90d") {
+      startDate.setDate(startDate.getDate() - 90);
+    } else if (timeframe === "1y") {
+      startDate.setDate(startDate.getDate() - 365);
+    } else {
+      startDate.setDate(startDate.getDate() - 7);
+    }
+    const previousEndDate = new Date(startDate);
+    const previousStartDate = new Date(startDate);
+
+    if (timeframe === "24h") {
+      previousStartDate.setHours(previousStartDate.getHours() - 24);
+    } else if (timeframe === "30d") {
+      previousStartDate.setDate(previousStartDate.getDate() - 30);
+    } else if (timeframe === "90d") {
+      previousStartDate.setDate(previousStartDate.getDate() - 90);
+    } else if (timeframe === "1y") {
+      previousStartDate.setDate(previousStartDate.getDate() - 365);
+    } else {
+      previousStartDate.setDate(previousStartDate.getDate() - 7);
+    }
+
+    const previousRevenueResult = await Order.aggregate([
+      {
+        $match: {
+          status: { $ne: "Cancelled" },
+          createdAt: {
+            $gte: previousStartDate,
+            $lt: previousEndDate,
+          },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$totalAmount" },
+        },
+      },
+    ]);
+    const revenueData = await Order.aggregate([
+      {
+        $match: {
+          status: { $ne: "Cancelled" },
+          createdAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: "$createdAt",
+            },
+          },
+          revenue: { $sum: "$totalAmount" },
+          orders: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+    ]);
+
+    const data = revenueData.map((item) => ({
+      label: item._id,
+      fullDate: item._id,
+      revenue: item.revenue,
+      orders: item.orders,
+      aov: item.orders
+        ? Number((item.revenue / item.orders).toFixed(2))
+        : 0,
+    }));
+    const previousRevenue = previousRevenueResult[0]?.total || 0;
+
+    const currentRevenue = data.reduce(
+      (sum, item) => sum + item.revenue,
+      0
+    );
+
+    let percentageChange = 0;
+
+    if (previousRevenue > 0) {
+      percentageChange = Number(
+        (((currentRevenue - previousRevenue) / previousRevenue) * 100).toFixed(1)
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      timeframe,
+      data,
+        percentageChange,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 // Update Vendor Status (Approve / Suspend Tenant)
 export const updateVendorStatus = async (req, res) => {
   try {
@@ -297,4 +427,5 @@ export const updatePlatformSettings = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
